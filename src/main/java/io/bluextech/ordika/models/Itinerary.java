@@ -1,20 +1,35 @@
 package io.bluextech.ordika.models;
 /* Created by limxuanhui on 2/1/24 */
 
-import lombok.Data;
+import lombok.Setter;
 
-import javax.persistence.*;
-import java.util.UUID;
+import java.util.List;
 
-@Data
-@Entity
-@Table(name = "itineraries")
-public class Itinerary {
-    @Id
-    private UUID id;
+@Setter
+public class Itinerary extends BaseMetadata {
 
-    @Column(name = "creator_id")
-    private String creatorId;
-//    private List<Route> routes;
+    private final BaseMetadata metadata;
+    private final List<Route> routes;
+
+    public Itinerary(BaseMetadata metadata, List<Route> routes) {
+        this.metadata = metadata;
+        this.routes = routes;
+    }
+
+    public BaseMetadata getMetadata() {
+        return metadata;
+    }
+
+    public List<Route> getRoutes() {
+        return routes;
+    }
+
+    @Override
+    public String toString() {
+        return "Itinerary{" +
+                "metadata=" + metadata +
+                ", routes=" + routes +
+                '}';
+    }
 
 }

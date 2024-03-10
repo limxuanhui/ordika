@@ -19,6 +19,7 @@ amazon:
       ACCESS_KEY: AKIAUFIGDK4UKTWJT273
       SECRET_KEY: bgGUzOKi1IaGAWTvI3oq9Nmq6EkJpDfnz4N+UcVC
     dynamodb:
-      endpoint: http://localhost:8000/
-      ACCESS_KEY: DUMMY_ACCESS_KEY
-      SECRET_KEY: DUMMY_SECRET_KEY
+      ENDPOINT: http://localhost:8000/
+      TABLE_NAME: sundaytable
+      ACCESS_KEY_ID: DUMMY_ACCESS_KEY_ID
+      SECRET_ACCESS_KEY: DUMMY_SECRET_ACCESS_KEY

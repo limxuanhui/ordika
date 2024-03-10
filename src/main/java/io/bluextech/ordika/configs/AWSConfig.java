@@ -7,10 +7,14 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@Getter
+@Setter
 @Configuration
 @ConfigurationProperties("amazon.aws.s3")
 public class AWSConfig {
@@ -22,22 +26,6 @@ public class AWSConfig {
         System.out.println("AWSConfig constructor called: " + ACCESS_KEY + " | " + SECRET_KEY);
     }
 
-    public String getACCESS_KEY() {
-        return ACCESS_KEY;
-    }
-
-    public void setACCESS_KEY(String ACCESS_KEY) {
-        this.ACCESS_KEY = ACCESS_KEY;
-    }
-
-    public String getSECRET_KEY() {
-        return SECRET_KEY;
-    }
-
-    public void setSECRET_KEY(String SECRET_KEY) {
-        this.SECRET_KEY = SECRET_KEY;
-    }
-
     @Bean
     public AmazonS3 s3Client() {
         AWSCredentials awsCredentials = new BasicAWSCredentials(ACCESS_KEY, SECRET_KEY);
@@ -47,4 +35,5 @@ public class AWSConfig {
                 .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
                 .build();
     }
+
 }

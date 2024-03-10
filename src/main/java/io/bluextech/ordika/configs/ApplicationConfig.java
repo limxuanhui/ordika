@@ -13,7 +13,7 @@ public class ApplicationConfig {
     private String API_KEY;
 
     @Bean
-    GeoApiContext geoApiContext() {
+    public GeoApiContext geoApiContext() {
         return new GeoApiContext.Builder().apiKey(API_KEY).build();
     }
 

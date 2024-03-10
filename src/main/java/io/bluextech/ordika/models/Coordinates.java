@@ -1,27 +1,20 @@
 package io.bluextech.ordika.models;
 /* Created by limxuanhui on 10/9/22 */
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Objects;
 
+@Getter
+@Setter
 public class Coordinates {
 
-    private Double latitude;
+    private Float latitude;
+    private Float longitude;
 
-    private Double longitude;
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(Double latitude) {
+    public Coordinates(Float latitude, Float longitude) {
         this.latitude = latitude;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
 
@@ -45,4 +38,5 @@ public class Coordinates {
                 ", longitude=" + longitude +
                 '}';
     }
+
 }

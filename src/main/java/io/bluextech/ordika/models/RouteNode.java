@@ -1,21 +1,33 @@
 package io.bluextech.ordika.models;
 /* Created by limxuanhui on 5/1/24 */
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import lombok.Getter;
+import lombok.Setter;
 
-@Entity
-@Table(name = "route_nodes")
+@Getter
+@Setter
 public class RouteNode {
-    @Id
-    private String id;
+
+    private String placeId;
     private String name;
     private String address;
-    private Double latitude;
-    private Double longitude;
+    private Coordinates coord;
 
-    @Transient
-    private Boolean openNow;
+    public RouteNode(String placeId, String name, String address, Coordinates coord) {
+        this.placeId = placeId;
+        this.name = name;
+        this.address = address;
+        this.coord = coord;
+    }
+
+    @Override
+    public String toString() {
+        return "RouteNode{" +
+                "placeId='" + placeId + '\'' +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                ", coord=" + coord +
+                '}';
+    }
+
 }

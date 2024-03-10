@@ -33,6 +33,11 @@
 				<version>1.12.290</version>
 			</dependency>
 			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>s3</artifactId>
+				<version>2.21.32</version>
+			</dependency>
+			<dependency>
 				<groupId>com.google.maps</groupId>
 				<artifactId>google-maps-services</artifactId>
 				<version>2.1.0</version>
@@ -57,11 +62,11 @@
 				<artifactId>jjwt-api</artifactId>
 				<version>0.11.5</version>
 			</dependency>
-			<dependency>
-				<groupId>org.postgresql</groupId>
-				<artifactId>postgresql</artifactId>
-				<version>42.6.0</version>
-			</dependency>
+<!--			<dependency>-->
+<!--				<groupId>org.postgresql</groupId>-->
+<!--				<artifactId>postgresql</artifactId>-->
+<!--				<version>42.6.0</version>-->
+<!--			</dependency>-->
 			<dependency>
 				<groupId>com.jayway.jsonpath</groupId>
 				<artifactId>json-path</artifactId>
@@ -77,6 +82,11 @@
 				<artifactId>lombok</artifactId>
 				<version>1.18.30</version>
 				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>dynamodb-enhanced</artifactId>
+				<version>2.20.109</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -103,10 +113,10 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-data-jpa</artifactId>-->
+<!--		</dependency>-->
 
 		<dependency>
 			<groupId>com.amazonaws</groupId>
@@ -115,7 +125,6 @@
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>s3</artifactId>
-			<version>2.21.32</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.maps</groupId>
@@ -149,17 +158,16 @@
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
 			<artifactId>dynamodb-enhanced</artifactId>
-			<version>2.20.109</version>
 		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.vladmihalcea</groupId>
-			<artifactId>hibernate-types-52</artifactId>
-			<version>2.21.1</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.postgresql</groupId>-->
+<!--			<artifactId>postgresql</artifactId>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>com.vladmihalcea</groupId>-->
+<!--			<artifactId>hibernate-types-52</artifactId>-->
+<!--			<version>2.21.1</version>-->
+<!--		</dependency>-->
 
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>

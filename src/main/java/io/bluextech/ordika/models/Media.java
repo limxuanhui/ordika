@@ -1,31 +1,40 @@
 package io.bluextech.ordika.models;
 /* Created by limxuanhui on 2/1/24 */
 
-import io.bluextech.ordika.enums.MediaType;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 
-import javax.persistence.*;
-import java.util.UUID;
-
-@Data
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@Entity
-@Table(name = "medias")
+@Getter
+@Setter
+@DynamoDbBean
 public class Media {
 
-    @Id
-    private UUID id;
-
-    @Column(name = "type")
-    private MediaType type;
-
-    @Column(name = "uri")
+    private String id;
+    private String type;
     private String uri;
-
-    @Column(name = "height")
     private Integer height;
-
-    @Column(name = "width")
     private Integer width;
+
+    public Media() {}
+
+    public Media(String id, String type, String uri, Integer height, Integer width) {
+        this.id = id;
+        this.type = type;
+        this.uri = uri;
+        this.height = height;
+        this.width = width;
+    }
+
+    @Override
+    public String toString() {
+        return "Media{" +
+                "id='" + id + '\'' +
+                ", type='" + type + '\'' +
+                ", uri='" + uri + '\'' +
+                ", height=" + height +
+                ", width=" + width +
+                '}';
+    }
 
 }

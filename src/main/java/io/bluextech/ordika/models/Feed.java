@@ -1,34 +1,36 @@
 package io.bluextech.ordika.models;
 /* Created by limxuanhui on 2/1/24 */
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.*;
 import java.util.List;
-import java.util.UUID;
 
-@Data
-@NoArgsConstructor
-@Entity
-@Table(name = "feeds")
+@Setter
 public class Feed {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    private FeedMetadata metadata;
+    private List<FeedItem> feedItems;
 
-    @ManyToOne
-    @JoinColumn(name = "creator_id")
-    private User creator;
+    public Feed(FeedMetadata metadata, List<FeedItem> feedItems) {
+        System.out.println("METADATA:" + metadata);
+        this.metadata = metadata;
+        this.feedItems = feedItems;
+    }
 
-    @Column(name = "tale_id")
-    private UUID taleId;
+    public FeedMetadata getMetadata() {
+        return metadata;
+    }
 
-    private transient List<FeedItem> items;
+    public List<FeedItem> getFeedItems() {
+        return feedItems;
+    }
 
-    public Feed(User creator) {
-        this.creator = creator;
+    @Override
+    public String toString() {
+        return "Feed{" +
+                "metadata=" + metadata +
+                ", feedItems=" + feedItems +
+                '}';
     }
 
 }

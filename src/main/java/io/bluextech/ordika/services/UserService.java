@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -25,8 +24,8 @@ public class UserService {
     @Autowired
     private final UserRepository userRepository;
 
-    @Autowired
-    private final MediaService mediaService;
+//    @Autowired
+//    private final MediaService mediaService;
 
     private final HttpTransport httpTransport = new NetHttpTransport();
 
@@ -44,18 +43,15 @@ public class UserService {
     }
 
     public Boolean checkIfUserExists(String sub) {
-        return userRepository.findById(sub).isPresent();
+        return null;
     }
 
     public User createNewUser(User user) {
-        System.out.println("Creating new user: " + user);
-        Boolean avatarIsSaved = mediaService.saveMedia(user.getAvatar());
-        return userRepository.save(user);
+        return null;
     }
 
     public User fetchUser(String sub) {
-        Optional<User> user = userRepository.findById(sub);
-        return user.orElse(null);
+        return null;
     }
 
 }
