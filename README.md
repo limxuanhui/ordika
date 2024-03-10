@@ -1,0 +1,1 @@
+## Ordika - Backend spring boot application for the Sunday app
