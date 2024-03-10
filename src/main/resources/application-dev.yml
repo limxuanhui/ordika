@@ -1,0 +1,24 @@
+spring:
+  cloud:
+    config:
+      uri: http://localhost:8888
+
+google:
+  api:
+    directions:
+      API_KEY: AIzaSyBd2XmXBRgtq2LGbo9HMEUgpfS2ZgXCfpk.
+      UNITS: metric
+      MODE: transit
+      TRANSIT_MODE: rail
+      OUTPUT_FORMAT: json
+      BASE_URL: https://maps.googleapis.com/maps/api/distancematrix/
+
+amazon:
+  aws:
+    s3:
+      ACCESS_KEY: AKIAUFIGDK4UKTWJT273
+      SECRET_KEY: bgGUzOKi1IaGAWTvI3oq9Nmq6EkJpDfnz4N+UcVC
+    dynamodb:
+      endpoint: http://localhost:8000/
+      ACCESS_KEY: DUMMY_ACCESS_KEY
+      SECRET_KEY: DUMMY_SECRET_KEY
