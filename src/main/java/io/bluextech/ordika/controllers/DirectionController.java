@@ -21,11 +21,6 @@ public class DirectionController {
     @Autowired
     private DistanceService distanceService;
 
-    @GetMapping()
-    public void greet() {
-        System.out.println("Hi");
-    }
-
     private List<Integer> getUnvisited(Map<Integer, Boolean> visited) {
         return visited.entrySet()
                 .stream()

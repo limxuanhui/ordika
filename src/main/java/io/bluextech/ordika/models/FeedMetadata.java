@@ -16,9 +16,14 @@ public class FeedMetadata extends BaseMetadata {
 
     public FeedMetadata() {}
 
+    public FeedMetadata(String PK, String SK, String id, User creator, Media thumbnail, String taleId) {
+        super(PK, SK, id, creator);
+        this.thumbnail = thumbnail;
+        this.taleId = taleId;
+    }
+
     public FeedMetadata(String PK, String SK, String id, User creator, Media thumbnail, String taleId, String GSI1PK, String GSI1SK) {
         super(PK, SK, id, creator);
-        System.out.println("PK: " + PK + " | SK: " + SK);
         this.thumbnail = thumbnail;
         this.taleId = taleId;
         this.GSI1PK = GSI1PK;

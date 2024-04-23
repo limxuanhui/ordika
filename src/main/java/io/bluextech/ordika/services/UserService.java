@@ -9,7 +9,6 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import io.bluextech.ordika.models.User;
 import io.bluextech.ordika.repositories.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,15 +16,11 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 
-@RequiredArgsConstructor
 @Service
 public class UserService {
 
     @Autowired
-    private final UserRepository userRepository;
-
-//    @Autowired
-//    private final MediaService mediaService;
+    private UserRepository userRepository;
 
     private final HttpTransport httpTransport = new NetHttpTransport();
 
@@ -42,15 +37,20 @@ public class UserService {
         return verifier.verify(idToken);
     }
 
-    public Boolean checkIfUserExists(String sub) {
+    public User createUser(User user) {
+        return userRepository.createUser(user);
+    }
+
+    public User getUserByUserId(String userId) {
+        System.out.println("Getting user...");
+        return userRepository.findUserMetadataByUserId(userId);
+    }
+
+    public User updateUser(User user) {
         return null;
     }
 
-    public User createNewUser(User user) {
-        return null;
-    }
-
-    public User fetchUser(String sub) {
+    public User deleteUser(User user) {
         return null;
     }
 

@@ -1,0 +1,193 @@
+### add user ###
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "USER#user1"}, "SK": {"S": "#METADATA"}, "id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"},
+"avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "USER#user1"}, "SK": {"S": "#METADATA_FEED#feed1"}, "id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "USER#user1"}, "SK": {"S": "#METADATA_TALE#tale1"}, "id": {"S": "tale1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail2"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-2.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"cover": {"M": {"id": {"S": "feeditemthumbnail2"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-2.jpeg"}, "height": {"N": "300"}, "width": {"N": "300"}}},
+"title": {"S": "Exploring Paradise: Taiwan Chronicles"}}'
+
+### add feed
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed11"}, "SK": {"S": "#METADATA"},
+"id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#feed11"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed12"}, "SK": {"S": "#METADATA"},
+"id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#feed12"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed13"}, "SK": {"S": "#METADATA"},
+"id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#feed13"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed14"}, "SK": {"S": "#METADATA"},
+"id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#feed14"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed15"}, "SK": {"S": "#METADATA"},
+"id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#feed15"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed16"}, "SK": {"S": "#METADATA"},
+"id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#feed16"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed17"}, "SK": {"S": "#METADATA"},
+"id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#feed17"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed18"}, "SK": {"S": "#METADATA"},
+"id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#feed18"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed19"}, "SK": {"S": "#METADATA"},
+"id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#feed19"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed20"}, "SK": {"S": "#METADATA"},
+"id": {"S": "feed1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#feed20"}}'
+
+### Add feed items
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed20"}, "SK": {"S": "FEED_ITEM#feeditem12"},
+"id": {"S": "feeditem12"},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail12"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-2.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"media": {"M": {"id": {"S": "feeditemmedia12"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-2.jpeg"}, "height": {"N": "1024"}, "width": {"N": "680"}}},
+"caption": {"S": "Sunny beach in Taiwan"},
+"feedId": {"S": "feed20"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed20"}, "SK": {"S": "FEED_ITEM#feeditem12"},
+"id": {"S": "feeditem12"},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail12"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-2.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"media": {"M": {"id": {"S": "feeditemmedia12"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-2.jpeg"}, "height": {"N": "1024"}, "width": {"N": "680"}}},
+"caption": {"S": "Sunny beach in Taiwan"},
+"feedId": {"S": "feed20"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed20"}, "SK": {"S": "FEED_ITEM#feeditem12"},
+"id": {"S": "feeditem12"},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail12"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-2.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"media": {"M": {"id": {"S": "feeditemmedia12"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-2.jpeg"}, "height": {"N": "1024"}, "width": {"N": "680"}}},
+"caption": {"S": "Sunny beach in Taiwan"},
+"feedId": {"S": "feed20"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#feed20"}, "SK": {"S": "FEED_ITEM#feeditem12"},
+"id": {"S": "feeditem12"},
+"thumbnail": {"M": {"id": {"S": "feeditemthumbnail12"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-2.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"media": {"M": {"id": {"S": "feeditemmedia12"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-2.jpeg"}, "height": {"N": "1024"}, "width": {"N": "680"}}},
+"caption": {"S": "Sunny beach in Taiwan"},
+"feedId": {"S": "feed20"}}'
+
+### add tale
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "TALE#tale1"}, "SK": {"S": "#METADATA"},
+"id": {"S": "tale1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "talethumbnail1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"cover": {"M": {"id": {"S": "talecover1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "1024"}, "width": {"N": "681"}}},
+"title": {"S": "Taiwan Chronicles: Exploring Paradise"},
+"GSI1PK": {"S": "METADATA_TALE"},
+"GSI1SK": {"S": "TALE#tale1"}
+}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "TALE#tale1"}, "SK": {"S": "#METADATA_ITINERARY"},
+"id": {"S": "itinerary1"},
+"creator": {"M": {"id": {"S": "user1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"}, "email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}}
+}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "TALE#tale1"}, "SK": {"S": "ITINERARY#ROUTE#route1"},
+"id": {"S": "route1"},
+"name": {"S": "Day 1 in Taiwan"},
+"routeNodes": {"L": [
+{"M": {"placeId": {"S": "place1"}, "name": {"S": "Tampines Mall"}, "address": {"S": "address1"}, "coord": {"M": {"latitude": {"N": "101.111"}, "longitude": {"N": "111.111"}}}}},
+{"M": {"placeId": {"S": "place2"}, "name": {"S": "Bedok Mall"}, "address": {"S": "address2"}, "coord": {"M": {"latitude": {"N": "102.222"}, "longitude": {"N": "122.222"}}}}},
+{"M": {"placeId": {"S": "place3"}, "name": {"S": "AMK Hub"}, "address": {"S": "address3"}, "coord": {"M": {"latitude": {"N": "103.333"}, "longitude": {"N": "133.333"}}}}}
+]},
+"encodedPolyline": {"S": ""},
+"order": {"N": "1"}
+}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "TALE#tale1"}, "SK": {"S": "ITINERARY#ROUTE#route2"},
+"id": {"S": "route2"},
+"name": {"S": "Day 2 in Taiwan"},
+"routeNodes": {"L": [
+{"M": {"placeId": {"S": "place4"}, "name": {"S": "HDB Hub"}, "address": {"S": "address1"}, "coord": {"M": {"latitude": {"N": "101.111"}, "longitude": {"N": "111.111"}}}}},
+{"M": {"placeId": {"S": "place5"}, "name": {"S": "Seletar Mall"}, "address": {"S": "address2"}, "coord": {"M": {"latitude": {"N": "102.222"}, "longitude": {"N": "122.222"}}}}},
+{"M": {"placeId": {"S": "place6"}, "name": {"S": "Lot One"}, "address": {"S": "address3"}, "coord": {"M": {"latitude": {"N": "103.333"}, "longitude": {"N": "133.333"}}}}}
+]},
+"encodedPolyline": {"S": ""},
+"order": {"N": "2"}
+}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "TALE#tale1"}, "SK": {"S": "STORY#METADATA_FEED#feed1"},
+"id": {"S": "storyitem1"},
+"type": {"S": "MEDIA"},
+"data": {"M": {"feedId": {"S": "feed1"}}},
+"order": {"N": "1"}
+}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "TALE#tale1"}, "SK": {"S": "STORY#TEXT#text1"},
+"id": {"S": "storyitem2"},
+"type": {"S": "TEXT"},
+"data": {"M": {"text": {"S": "This is the first day in Taiwan and I love it!"}, "style": {"M": {"fontFamily": {"S": "Futura"}, "fontSize": {"N": "24"}, "fontWeight": {"S": "bold"}, "color": {"S": "#000000"}}}}},
+"order": {"N": "2"}
+}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "TALE#tale1"}, "SK": {"S": "STORY#TEXT#text2"},
+"id": {"S": "storyitem3"},
+"type": {"S": "TEXT"},
+"data": {"M": {"text": {"S": "This is the second day in Taiwan and I love it!"}, "style": {"M": {"fontFamily": {"S": "Futura"}, "fontSize": {"N": "24"}, "fontWeight": {"S": "bold"}, "color": {"S": "#000000"}}}}},
+"order": {"N": "3"}
+}'
+
+"feedId": {"S": "feed1"},
+"text": {"S": "This is the first day in Taiwan and I love it!"},
+"style": {"M": {"fontFamily": {"S": "Futura"}, "fontSize": {"N": "24"}, "fontWeight": {"S": "bold"}, "color": {"S": "#000000"}}},

@@ -6,7 +6,6 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.LatLng;
-import com.google.maps.model.TransitMode;
 import com.google.maps.model.TravelMode;
 import io.bluextech.ordika.configs.GoogleDirectionsApiConfig;
 import io.bluextech.ordika.models.Coordinates;
@@ -24,23 +23,8 @@ public class DirectionService {
     @Autowired
     private GoogleDirectionsApiConfig googleDirectionsApiConfig;
 
-    private final String ORIGINS = "seoul%20train%20station";
-    private final String DESTINATIONS = "hongik%20university";
-//    private final String PARAMETERS;
-//    private final String URL;
-
     public DirectionService() {
         System.out.println("DirectionsService constructor called");
-//        PARAMETERS  = "?key=" + googleDirectionsApiConfig.getAPI_KEY()
-//                + "&origins=" + ORIGINS
-//                + "&destinations=" + DESTINATIONS
-//                + "&mode=" + googleDirectionsApiConfig.getMODE()
-//                + "&transit_mode=" + googleDirectionsApiConfig.getTRANSIT_MODE()
-//                + "&units=" + googleDirectionsApiConfig.getUNITS();
-//
-//        URL = googleDirectionsApiConfig.getBASE_URL()
-//                + googleDirectionsApiConfig.getOUTPUT_FORMAT()
-//                + PARAMETERS;
     }
 
     public DirectionsResult getDirections(Coordinates origin, Coordinates destination) {
@@ -52,8 +36,8 @@ public class DirectionService {
             directionsResult = directionsApiRequest
                     .origin(start)
                     .destination(end)
-                    .mode(TravelMode.TRANSIT)
-                    .transitMode(TransitMode.RAIL)
+                    .mode(TravelMode.DRIVING)
+//                    .transitMode(TransitMode.)
                     .await();
         } catch (ApiException e) {
             e.printStackTrace();

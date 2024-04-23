@@ -9,15 +9,14 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbConve
 
 @Setter
 @DynamoDbBean
-public class FeedItem extends BaseDynamoDbItem {
+public class FeedItem extends BaseDynamoDbItem implements Comparable<FeedItem> {
 
-    public static final String PK_PREFIX = "FEEDITEM#";
-    public static final String SK_PREFIX = "METADATA#";
     private String id;
     private Media thumbnail;
     private Media media;
     private String caption;
     private String feedId;
+    private Integer order;
 
     public FeedItem() {}
 
@@ -57,6 +56,11 @@ public class FeedItem extends BaseDynamoDbItem {
         return feedId;
     }
 
+    @DynamoDbAttribute("order")
+    public Integer getOrder() {
+        return order;
+    }
+
     @Override
     public String toString() {
         return "FeedItem{" +
@@ -67,7 +71,13 @@ public class FeedItem extends BaseDynamoDbItem {
                 ", media=" + media +
                 ", caption='" + caption + '\'' +
                 ", feedId='" + feedId + '\'' +
+                ", order='" + order + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(FeedItem o) {
+        return this.order.compareTo(o.getOrder());
     }
 
 }

@@ -37,10 +37,10 @@ public class UserConverter implements AttributeConverter<User> {
 
     @Override
     public User transformTo(AttributeValue attributeValue) {
-        System.out.println("Running transformTo in UserConverter");
+//        System.out.println("Running transformTo in UserConverter");
         Map<String, AttributeValue> map = attributeValue.m();
         Map<String, AttributeValue> avatarMap = map.get("avatar").m();
-        System.out.println(mediaConverter);
+//        System.out.println(mediaConverter);
         return new User(
                 map.get("id").s(),
                 map.get("name").s(),

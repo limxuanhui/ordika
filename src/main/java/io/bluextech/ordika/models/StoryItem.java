@@ -12,13 +12,13 @@ import java.util.Map;
 public class StoryItem extends BaseDynamoDbItem implements Comparable<StoryItem> {
 
     private String id;
-    private String type;
+    private Integer type;
     private Map<String, String> data;
     private Integer order;
 
     public StoryItem() {}
 
-    public StoryItem(String id, String type, Map<String, String> data, Integer order) {
+    public StoryItem(String id, Integer type, Map<String, String> data, Integer order) {
         this.id = id;
         this.type = type;
         this.data = data;
@@ -31,7 +31,7 @@ public class StoryItem extends BaseDynamoDbItem implements Comparable<StoryItem>
     }
 
     @DynamoDbAttribute(value = "type")
-    public String getType() {
+    public Integer getType() {
         return type;
     }
 

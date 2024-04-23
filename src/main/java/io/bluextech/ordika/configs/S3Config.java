@@ -17,13 +17,13 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 @Configuration
 @ConfigurationProperties("amazon.aws.s3")
-public class AWSConfig {
+public class S3Config {
 
     private String ACCESS_KEY;
     private String SECRET_KEY;
 
-    public AWSConfig() {
-        System.out.println("AWSConfig constructor called: " + ACCESS_KEY + " | " + SECRET_KEY);
+    public S3Config() {
+        System.out.println("S3Config constructor called: " + ACCESS_KEY + " | " + SECRET_KEY);
     }
 
     @Bean

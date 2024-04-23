@@ -17,6 +17,13 @@ public class TaleMetadata extends BaseMetadata {
 
     public TaleMetadata() {}
 
+    public TaleMetadata(String PK, String SK, String id, User creator, Media cover, Media thumbnail, String title) {
+        super(PK, SK, id, creator);
+        this.cover = cover;
+        this.thumbnail = thumbnail;
+        this.title = title;
+    }
+
     public TaleMetadata(String PK, String SK, String id, User creator, Media cover, Media thumbnail, String title, String GSI1PK, String GSI1SK) {
         super(PK, SK, id, creator);
         this.cover = cover;

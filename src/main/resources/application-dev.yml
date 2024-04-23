@@ -11,7 +11,7 @@ google:
       MODE: transit
       TRANSIT_MODE: rail
       OUTPUT_FORMAT: json
-      BASE_URL: https://maps.googleapis.com/maps/api/distancematrix/
+      BASE_URL: https://maps.googleapis.com/maps/api/distancematrix
 
 amazon:
   aws:
@@ -19,7 +19,7 @@ amazon:
       ACCESS_KEY: AKIAUFIGDK4UKTWJT273
       SECRET_KEY: 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
     dynamodb:
-      ENDPOINT: http://localhost:8000/
+      ENDPOINT: http://localhost:8000
       TABLE_NAME: sundaytable
-      ACCESS_KEY_ID: DUMMY_ACCESS_KEY_ID
-      SECRET_ACCESS_KEY: DUMMY_SECRET_ACCESS_KEY
+      ACCESS_KEY_ID: DUMMYACCESSKEYID
+      SECRET_ACCESS_KEY: DUMMYSECRETACCESSKEY

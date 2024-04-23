@@ -1,0 +1,137 @@
+#################### Create table ####################
+aws dynamodb create-table --table-name sundaytable --endpoint-url http://localhost:8000 \
+--attribute-definitions AttributeName=PK,AttributeType=S AttributeName=SK,AttributeType=S --key-schema AttributeName=PK,KeyType=HASH AttributeName=SK,KeyType=RANGE --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+
+#################### Update table for GSI ####################
+aws dynamodb update-table --table-name sundaytable --endpoint-url http://localhost:8000 \
+--attribute-definitions AttributeName=GSI1PK,AttributeType=S AttributeName=GSI1SK,AttributeType=S \
+--global-secondary-index-updates '[{"Create":{"IndexName": "GSI1", "KeySchema": [{"AttributeName": "GSI1PK", "KeyType": "HASH"}, {"AttributeName": "GSI1SK", "KeyType": "RANGE"}], "ProvisionedThroughput": {"ReadCapacityUnits": 5, "WriteCapacityUnits": 5}, "Projection": {"ProjectionType": "ALL"}}}]'
+
+#################### Get an item from the table ####################
+aws dynamodb get-item --table-name sundaytable --endpoint-url http://localhost:8000 --key '{"PK": {"S": "USER#123"}, "SK": {"S": "METADATA#20240131T123456Z"}}'
+
+#################### List all tables in the database ####################
+aws dynamodb list-tables --endpoint-url http://localhost:8000
+
+#################### Describe the properties of the table ####################
+aws dynamodb describe-table --table-name sundaytable --endpoint-url http://localhost:8000
+
+#################### View all data in the table/index ####################
+aws dynamodb scan --table-name sundaytable --endpoint-url http://localhost:8000
+aws dynamodb scan --table-name sundaytable --index-name GSI1 --endpoint-url http://localhost:8000
+
+#################### Query ####################
+aws dynamodb query --table-name sundaytable --key-condition-expression 'PK=:pk and begins_with(SK, :sk)' --expression-attribute-values '{":pk": {"S": "USER#789"}, ":sk": {"S": "METADATA"}}' --endpoint-url http://localhost:8000
+aws dynamodb query --table-name sundaytable --key-condition-expression "PK=:pk" --expression-attribute-values '{":pk": {"S": "USER#789"}}' --endpoint-url http://localhost:8000
+aws dynamodb query --table-name sundaytable --key-condition-expression "PK=:pk and SK <= :sk" --expression-attribute-values '{":pk": {"S": "USER#789"},^C:sk": {"S": "METADATA"}}' --endpoint-url http://localhost:8000
+
+#################### Delete item ####################
+aws dynamodb delete-item --table-name sundaytable  --endpoint-url http://localhost:8000 --key '{"PK": {"S": "FEED#123"}, "SK": {"S": "#METADATA"}}'
+aws dynamodb delete-item --table-name sundaytable  --endpoint-url http://localhost:8000 --key '{"PK": {"S": "FEED#456"}, "SK": {"S": "#METADATA"}}'
+aws dynamodb delete-item --table-name sundaytable  --endpoint-url http://localhost:8000 --key '{"PK": {"S": "TALE#tale1"}, "SK": {"S": "STORY#METADATA_FEED#feed1"}}'
+aws dynamodb delete-item --table-name sundaytable  --endpoint-url http://localhost:8000 --key '{"PK": {"S": "TALE#tale1"}, "SK": {"S": "STORY#TEXT#text1"}}'
+aws dynamodb delete-item --table-name sundaytable  --endpoint-url http://localhost:8000 --key '{"PK": {"S": "TALE#tale1"}, "SK": {"S": "STORY#TEXT#text1"}}'
+aws dynamodb delete-item --table-name sundaytable  --endpoint-url http://localhost:8000 --key '{"PK": {"S": "FEED#01HV1WB9NW9BXZ0THN459SCP1R"}, "SK": {"S": "FEED_ITEM#01HV1WA98P6WDEMJH2422GHKKR"}}'
+
+#################### Delete table ####################
+aws dynamodb delete-table --table-name sundaytable --endpoint-url http://localhost:8000
+
+#################### Put an item into the table ####################
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S":"USER#789"}, "SK": {"S":"FEED#999#METADATA"}, "id": {"S":"999"}, "creator":{"M": {"id": {"S": "789"}, "name": {"S": "Lisa"}, "handle": {"S": "lalisa"}, "email": {"S": "lisa@test.com"}, "avatar": {"S": "lisa.jpeg"}}},
+"thumbnail": {"S": "taiwan-1-150.jpeg"}, "taleId": {"S": "888"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": ""}, "SK": {"S": ""}, }'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#123"}, "SK": {"S": "#METADATA"}, "id": {"S": "123"}, "creator": {"M": {"id": {"S": "u1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"},
+"email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"thumbnail": {"M": {"id": {"S": "feedtbn1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "taiwan-1.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#123"}}'
+
+aws dynamodb put-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--item '{"PK": {"S": "FEED#456"}, "SK": {"S": "#METADATA"}, "id": {"S": "123"}, "creator": {"M": {"id": {"S": "u1"}, "name": {"S": "joseph"}, "handle": {"S": "limkopi"},
+"email": {"S": "joseph@test.com"}, "avatar": {"M": {"id": {"S": "avatar1"}, "type": {"S": "image/jpeg"}, "uri": {"S": "joseph.jpeg"}, "height": {"N": "150"}, "width": {"N": "150"}}}}},
+"taleId": {"S": "tale1"}, "GSI1PK": {"S": "METADATA_FEED"}, "GSI1SK": {"S": "FEED#456"}}'
+
+#################### Update item ####################
+aws dynamodb update-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--key '{"PK":{"S":"TALE#01HTGQJRFFJF3KVAC0VFFDW4HV"},"SK":{"S":"ITINERARY#ROUTE#01HTGQ46GECREK8R730REJ4P8S"}}' \
+--update-expression 'SET name=:v1' --expression-attribute-values '{":v1": {"S": "Day 100"}}'
+
+aws dynamodb update-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--key '{"PK":{"S":"FEED#01HT8XCT4KYV1N2J5Z6YBZW8HR"},"SK":{"S":"FEED_ITEM#01HT8XCQKR7NHDAVAY08GTPJJ1"}}' \
+--update-expression 'SET caption=:v1' --expression-attribute-values '{":v1": {"S": "Is this a dog video?"}}'
+
+aws dynamodb update-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--key '{"PK":{"S":"TALE#01HTGQJRFFJF3KVAC0VFFDW4HV"},"SK":{"S":"ITINERARY#ROUTE#01HTGQ46GECREK8R730REJ4P8S"}}'
+--update-expression 'REMOVE title'
+
+##### If run into --- Invalid UpdateExpression: Attribute name is a reserved keyword --- kind of error, use expression value name like below
+##### '#' needs to prefix the expression attribute name
+aws dynamodb update-item --table-name sundaytable --endpoint-url http://localhost:8000 \
+--key '{"PK":{"S":"TALE#01HTGQJRFFJF3KVAC0VFFDW4HV"},"SK":{"S":"ITINERARY#ROUTE#01HTGQ46GECREK8R730REJ4P8S"}}' \
+--update-expression 'SET #routeName=:v1' \
+--expression-attribute-names '{"#routeName": "name"}' \
+--expression-attribute-values '{":v1": {"S": "Day 100"}}'
+
+
+#################### Query index ####################
+aws dynamodb query --table-name sundaytable --index-name GSI1 --endpoint-url http://localhost:8000 \
+--key-condition-expression 'GSI1PK=:gsi1pk and begins_with(GSI1SK, :gsi1sk)' --expression-attribute-values '{":gsi1pk": {"S": "METADATA_FEED"}, ":gsi1sk": {"S": "FEED#"}}'
+
+
+PK		 		SK							GSI1PK			GSI1SK			Attributes
+USER#user1 		#METADATA													id:S, name:S, handle:S, email:S, avatar:Media, dateJoined?:datetime
+USER#user1 		#METADATA_FEED#<ulid>										id:S, creator:User, thumbnail:Media, taleId:S
+USER#user1 		#METADATA_TALE#<ulid>										id:S, creator:User, thumbnail:Media, cover:Media, title:S
+FEED#feed1	 	#METADATA				 	METADATA_FEED	FEED#feed1		id:S, creator:User, thumbnail:Media, taleId:S, GSI1PK:S, GSI1SK:S
+FEED#feed1	 	FEED_ITEM#feeditem1											id:S, thumbnail:Media, media:Media, caption:S, feedId:S
+FEED#feed1  	FEED_ITEM#feeditem2											id:S, thumbnail:Media, media:Media, caption:S, feedId:S
+TALE#tale1	 	#METADATA					METADATA_TALE	TALE#tale1		id:S, creator:User, thumbnail:Media, cover:Media, title:S, GSI1PK:S, GSI1SK:S
+TALE#tale1	 	#METADATA_ITINERARY											id:S, creator:User
+TALE#tale1		ITINERARY#ROUTE#<id>										id:S, name:S, routeNodes:{placeId:S,name:S,address:S,coord:{latitude:number,longitude:number},openNow?:boolean}[], encodedPolyline:S
+TALE#tale1		ITINERARY#ROUTE#<id>										id:S, name:S, routeNodes:RouteNodeInfo[], encodedPolyline:S (*If not routed, encodedPolyline is an empty string)
+TALE#tale1		STORY#METADATA_FEED#<ulid>									id:S, type:S, feedId:S, order:number
+TALE#tale1		STORY#METADATA_FEED#<ulid>									id:S, type:S, feedId:S, order:number
+TALE#tale1		STORY#STORY_ITEM#<nanoid>									id:S, type:S, text:S, order:number
+TALE#tale1		STORY#STORY_ITEM#<nanoid>									id:S, type:S, text:S, style:S/M, order:number
+
+
+GSI1PK			GSI1SK				Attributes
+METADATA_FEED	FEED#<ts1-ulid>		PK:S, SK:S, id:S, creator:User, thumbnail:Media, taleId:S
+METADATA_FEED	FEED#<ts2-ulid>		PK:S, SK:S, id:S, creator:User, thumbnail:Media, taleId:S
+METADATA_FEED	FEED#<ts3-ulid>		PK:S, SK:S, id:S, creator:User, thumbnail:Media, taleId:S
+METADATA_TALE	TALE#<ts1-ulid>		PK:S, SK:S, id:S, creator:User, thumbnail:Media, cover:Media, title:S
+METADATA_TALE	TALE#<ts2-ulid>		PK:S, SK:S, id:S, creator:User, thumbnail:Media, cover:Media, title:S
+METADATA_TALE	TALE#<ts3-ulid>		PK:S, SK:S, id:S, creator:User, thumbnail:Media, cover:Media, title:S
+
+* Can edit specific story items and no need to update unchanged story_items
+* I can update the order everytime an edit happens because we assume edits happen infrequently.
+
+HomeScreen - getPaginatedFeedsByIds ? Sunday -> Ordika -> query dynamodb for paginated feeds sorted latest (based on timestamp or ULID in sort key) first
+select from sundaygsi1 where GSI1PK=:METADATA_FEED and GSI1SK begins_with FEED#
+
+TalesOverviewScreen - getPaginatedTalesMetadata
+select from sundaygsi1 where GSI1PK=:METADATA_TALE and GSI1SK begins_with TALE#
+
+WriteFeedScreen - (optional, for edit) getFeedById
+select from sundaytable where PK=:FEED#1 => get whole feed
+
+WriteTaleScreen - (optional, for edit) getTaleById
+select from sundaytable where PK=:TALE#1 => get whole tale
+
+TaleViewScreen
+select from sundaytable where PK=:TALE#1 and SK begins_with #METADATA
+select
+
+ProfileScreen -
+getUserMetadataById
+select from sundaytable where PK=:USER#123 and SK=:#METADATA
+
+getPaginatedTalesMetadataByUserId
+select from sundaytable where PK=:USER#123 and SK begins_with #METADATA_TALE
+
+getPaginatedFeedsMetadataByUserId
+select from sundaytable where PK=:USER#123 and SK begins_with #METADATA_FEED

@@ -23,7 +23,7 @@ public class User {
 
     public User(String id, String name, String handle, String email, Media avatar) {
         this.PK = PK_PREFIX + id;
-        this.SK = SK_PREFIX + Math.random();
+        this.SK = SK_PREFIX;
         this.id = id;
         this.name = name;
         this.handle = handle;

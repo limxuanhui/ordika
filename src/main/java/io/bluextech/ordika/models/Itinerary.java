@@ -6,7 +6,7 @@ import lombok.Setter;
 import java.util.List;
 
 @Setter
-public class Itinerary extends BaseMetadata {
+public class Itinerary {
 
     private final BaseMetadata metadata;
     private final List<Route> routes;

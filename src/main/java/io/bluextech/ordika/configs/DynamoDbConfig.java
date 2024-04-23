@@ -35,18 +35,21 @@ public class DynamoDbConfig {
     private String SECRET_ACCESS_KEY;
 
     @Bean
-    public DynamoDbEnhancedClient dynamoDbEnhancedClient() {
-        System.out.println("DynamoDbEnhancedClient bean created");
+    public DynamoDbClient dynamoDbClient() {
+        System.out.println("DynamoDbClient bean created");
         AwsBasicCredentials credentials = AwsBasicCredentials.create(ACCESS_KEY_ID, SECRET_ACCESS_KEY);
-
-        DynamoDbClient dynamoDbClient = DynamoDbClient.builder()
+        return DynamoDbClient.builder()
                 .region(region)
                 .endpointOverride(URI.create(ENDPOINT))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .build();
+    }
 
+    @Bean
+    public DynamoDbEnhancedClient dynamoDbEnhancedClient() {
+        System.out.println("DynamoDbEnhancedClient bean created");
         return DynamoDbEnhancedClient.builder()
-                .dynamoDbClient(dynamoDbClient)
+                .dynamoDbClient(dynamoDbClient())
                 .build();
     }
 
