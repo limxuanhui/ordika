@@ -273,53 +273,58 @@ public class TaleRepository {
 
         // Save routes
         List<Route> routes = tale.getItinerary().getRoutes();
-        routes.forEach(route -> {
-            route.setPK(taleMetadata.getPK());
-            route.setSK("ITINERARY#ROUTE#" + route.getId());
-        });
-        List<WriteBatch> routesBatches = routes.stream()
-                .map(item -> WriteBatch.builder(Route.class)
-                        .mappedTableResource(routeTable)
-                        .addPutItem(item)
-                        .build())
-                .toList();
-        BatchWriteItemEnhancedRequest batchSaveRoutesRequest = BatchWriteItemEnhancedRequest.builder()
-                .writeBatches(routesBatches)
-                .build();
-        BatchWriteResult batchSaveRoutesResult = dynamoDbEnhancedClient.batchWriteItem(batchSaveRoutesRequest);
-        System.out.println("----------- Routes saved successfully -----------");
-        System.out.println(batchSaveRoutesResult.unprocessedDeleteItemsForTable(routeTable));
+        if (routes != null && !routes.isEmpty()) {
+            routes.forEach(route -> {
+                route.setPK(taleMetadata.getPK());
+                route.setSK("ITINERARY#ROUTE#" + route.getId());
+            });
+            List<WriteBatch> routesBatches = routes.stream()
+                    .map(item -> WriteBatch.builder(Route.class)
+                            .mappedTableResource(routeTable)
+                            .addPutItem(item)
+                            .build())
+                    .toList();
+            BatchWriteItemEnhancedRequest batchSaveRoutesRequest = BatchWriteItemEnhancedRequest.builder()
+                    .writeBatches(routesBatches)
+                    .build();
+            BatchWriteResult batchSaveRoutesResult = dynamoDbEnhancedClient.batchWriteItem(batchSaveRoutesRequest);
+            System.out.println("----------- Routes saved successfully -----------");
+            System.out.println(batchSaveRoutesResult.unprocessedDeleteItemsForTable(routeTable));
+        }
+
 
         // Save story items
         List<StoryItem> storyItems = tale.getStory();
-        storyItems.forEach(storyItem -> {
-            storyItem.setPK(taleMetadata.getPK());
-            storyItem.setSK("STORY#STORY_ITEM#" + storyItem.getId());
-        });
-        List<String> linkedFeedIds = storyItems.stream()
-                .filter(storyItem -> storyItem.getType() == 1)
-                .map(storyItem -> storyItem.getData().get("feedId"))
-                .toList();
-        List<FeedMetadata> linkedFeedsMetadata = feedService.getFeedMetadataListByFeedIds(linkedFeedIds);
-        linkedFeedsMetadata.forEach(metadata -> {
-            metadata.setTaleId(taleMetadata.getId());
-        });
-        feedService.updateFeedsTaleId(linkedFeedsMetadata);
+        if (storyItems != null && !storyItems.isEmpty()) {
+            storyItems.forEach(storyItem -> {
+                storyItem.setPK(taleMetadata.getPK());
+                storyItem.setSK("STORY#STORY_ITEM#" + storyItem.getId());
+            });
+            List<String> linkedFeedIds = storyItems.stream()
+                    .filter(storyItem -> storyItem.getType() == 1)
+                    .map(storyItem -> storyItem.getData().get("feedId"))
+                    .toList();
+            List<FeedMetadata> linkedFeedsMetadata = feedService.getFeedMetadataListByFeedIds(linkedFeedIds);
+            linkedFeedsMetadata.forEach(metadata -> {
+                metadata.setTaleId(taleMetadata.getId());
+            });
+            feedService.updateFeedsTaleId(linkedFeedsMetadata);
 
-        List<WriteBatch> storyItemsBatches = storyItems
-                .stream()
-                .map(item -> WriteBatch.builder(StoryItem.class)
-                        .mappedTableResource(storyItemTable)
-                        .addPutItem(item)
-                        .build())
-                .toList();
-        BatchWriteItemEnhancedRequest batchSaveStoryItemsRequest = BatchWriteItemEnhancedRequest
-                .builder()
-                .writeBatches(storyItemsBatches)
-                .build();
-        BatchWriteResult batchSaveStoryItemsResponse = dynamoDbEnhancedClient.batchWriteItem(batchSaveStoryItemsRequest);
-        System.out.println("----------- Story items saved successfully -----------");
-        System.out.println(batchSaveStoryItemsResponse.unprocessedDeleteItemsForTable(storyItemTable));
+            List<WriteBatch> storyItemsBatches = storyItems
+                    .stream()
+                    .map(item -> WriteBatch.builder(StoryItem.class)
+                            .mappedTableResource(storyItemTable)
+                            .addPutItem(item)
+                            .build())
+                    .toList();
+            BatchWriteItemEnhancedRequest batchSaveStoryItemsRequest = BatchWriteItemEnhancedRequest
+                    .builder()
+                    .writeBatches(storyItemsBatches)
+                    .build();
+            BatchWriteResult batchSaveStoryItemsResponse = dynamoDbEnhancedClient.batchWriteItem(batchSaveStoryItemsRequest);
+            System.out.println("----------- Story items saved successfully -----------");
+            System.out.println(batchSaveStoryItemsResponse.unprocessedDeleteItemsForTable(storyItemTable));
+        }
 
         return tale;
     }
