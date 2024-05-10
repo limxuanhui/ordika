@@ -12,6 +12,13 @@ import java.util.List;
 @Setter
 public class Tale {
 
+    public static final String PK_PREFIX = "TALE#";
+    public static final String SK_PREFIX = "#METADATA";
+    public static final String GSI1PK_PREFIX = "METADATA_TALE";
+    public static final String GSI1SK_PREFIX = "TALE#";
+    public static final String USER_PK_PREFIX = "USER#";
+    public static final String USER_SK_PREFIX = "#METADATA_TALE#TALE#";
+    public static final String ITINERARY_SK_PREFIX = "#METADATA_ITINERARY";
     private TaleMetadata metadata;
     private Itinerary itinerary;
     private List<StoryItem> story;

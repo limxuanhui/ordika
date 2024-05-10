@@ -83,7 +83,7 @@ aws dynamodb query --table-name sundaytable --index-name GSI1 --endpoint-url htt
 
 
 PK		 		SK							GSI1PK			GSI1SK			Attributes
-USER#user1 		#METADATA													id:S, name:S, handle:S, email:S, avatar:Media, dateJoined?:datetime
+USER#user1 		#METADATA													id:S, name:S, handle:S, email:S, avatar:Media, createdAt?:Instant, isDeactivated?:boolean
 USER#user1 		#METADATA_FEED#<ulid>										id:S, creator:User, thumbnail:Media, taleId:S
 USER#user1 		#METADATA_TALE#<ulid>										id:S, creator:User, thumbnail:Media, cover:Media, title:S
 FEED#feed1	 	#METADATA				 	METADATA_FEED	FEED#feed1		id:S, creator:User, thumbnail:Media, taleId:S, GSI1PK:S, GSI1SK:S

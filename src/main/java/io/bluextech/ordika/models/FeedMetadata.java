@@ -30,6 +30,20 @@ public class FeedMetadata extends BaseMetadata {
         this.GSI1SK = GSI1SK;
     }
 
+    public FeedMetadata(String id, User creator, Media thumbnail, String taleId) {
+        super(Feed.USER_PK_PREFIX + creator.getId(), Feed.USER_SK_PREFIX + id, id, creator);
+        this.thumbnail = thumbnail;
+        this.taleId = taleId;
+    }
+
+    public FeedMetadata(String id, User creator, Media thumbnail, String taleId, String GSI1PK, String GSI1SK) {
+        super(Feed.PK_PREFIX + id, Feed.SK_PREFIX, id, creator);
+        this.thumbnail = thumbnail;
+        this.taleId = taleId;
+        this.GSI1PK = GSI1PK;
+        this.GSI1SK = GSI1SK;
+    }
+
     @DynamoDbConvertedBy(MediaConverter.class)
     @DynamoDbAttribute("thumbnail")
     public Media getThumbnail() {

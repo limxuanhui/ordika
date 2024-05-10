@@ -7,12 +7,15 @@ import io.bluextech.ordika.models.FeedMetadata;
 import io.bluextech.ordika.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.utils.ImmutableMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,12 +35,59 @@ public class FeedRepository {
     @Autowired
     private DynamoDbTable<FeedItem> feedItemTable;
 
-    // HomeScreen, paginated feeds
+    public Feed getFeedByFeedId(String feedId) {
+        FeedMetadata feedMetadata = feedMetadataTable.getItem(Key.builder()
+                .partitionValue("FEED#" + feedId)
+                .sortValue("#METADATA")
+                .build());
+        List<FeedItem> feedItems = getAllFeedItemsByFeedId(feedId);
+
+        return new Feed(feedMetadata, feedItems);
+    }
+
+    public List<FeedItem> getAllFeedItemsByFeedId(String feedId) {
+        List<FeedItem> allFeedItems = new ArrayList<>();
+        QueryConditional conditional = QueryConditional.sortBeginsWith(
+                Key.builder()
+                        .partitionValue("FEED#" + feedId)
+                        .sortValue("FEED_ITEM#")
+                        .build()
+        );
+        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
+                .queryConditional(conditional)
+                .build();
+        SdkIterable<FeedItem> feedItemsIterable = feedItemTable.query(request).items();
+        feedItemsIterable.forEach(allFeedItems::add);
+
+        return allFeedItems.stream().sorted().toList();
+    }
+
+    public List<Feed> getFeedsListByFeedIds(List<String> feedIds) {
+        List<Feed> feedList = new ArrayList<>();
+        feedIds.forEach(feedId -> {
+            feedList.add(getFeedByFeedId(feedId));
+        });
+        return feedList;
+    }
+
+    public List<FeedMetadata> getFeedMetadataListByFeedIds(List<String> feedIds) {
+        List<FeedMetadata> feedMetadataList = new ArrayList<>();
+        feedIds.forEach(id -> {
+            FeedMetadata metadata = feedMetadataTable.getItem(
+                    Key.builder()
+                            .partitionValue("FEED#" + id)
+                            .sortValue("#METADATA")
+                            .build());
+            feedMetadataList.add(metadata);
+        });
+        return feedMetadataList;
+    }
+
     public Page<Feed> getNextFeedsPage(Map<String, AttributeValue> exclusiveStartKey) {
         QueryConditional feedMetadataPageConditional = QueryConditional.sortBeginsWith(
                 Key.builder()
-                        .partitionValue("METADATA_FEED")
-                        .sortValue("FEED#")
+                        .partitionValue(Feed.GSI1PK_PREFIX)
+                        .sortValue(Feed.GSI1SK_PREFIX)
                         .build()
         );
         QueryEnhancedRequest feedMetadataPageRequest = QueryEnhancedRequest.builder()
@@ -46,6 +96,10 @@ public class FeedRepository {
                 .scanIndexForward(false)
                 .consistentRead(false)
                 .exclusiveStartKey(exclusiveStartKey)
+                .filterExpression(Expression.builder()
+                        .expression("creator.isDeactivated=:isDeactivated")
+                        .expressionValues(Map.of(":isDeactivated", AttributeValue.fromBool(false)))
+                        .build())
                 .build();
         long start = System.currentTimeMillis();
         Page<FeedMetadata> feedMetadataPage = feedMetadataTable.index("GSI1")
@@ -62,7 +116,7 @@ public class FeedRepository {
                             .sortValue("FEED_ITEM#")
                             .build()
             );
-            // Will feed items be ordered correctly?
+
             QueryEnhancedRequest feedItemsRequest = QueryEnhancedRequest.builder()
                     .queryConditional(feedItemsConditional)
                     .scanIndexForward(false)
@@ -76,37 +130,13 @@ public class FeedRepository {
         });
 
         System.out.println("Time taken to get feed page (ms): " + (System.currentTimeMillis() - start));
-
+        System.out.println("FEEDS!!!: ");
+        System.out.println(feeds);
+        System.out.println("=====================");
         Map<String, AttributeValue> lastEvaluatedKey = feedMetadataPage.lastEvaluatedKey();
         return Page.create(feeds, lastEvaluatedKey);
     }
 
-    // ProfileScreen, MyFeeds, paginated feeds metadata
-    public Page<FeedMetadata> getNextFeedsMetadataPageByUserId(String userId) {
-        QueryConditional conditional = QueryConditional.sortBeginsWith(
-                Key.builder()
-                        .partitionValue("USER#" + userId)
-                        .sortValue("#METADATA_FEED#FEED#")
-                        .build()
-        );
-        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
-                .queryConditional(conditional)
-                .limit(10)
-                .scanIndexForward(false)
-//                .filterExpression(Expression.builder().build())
-//                .consistentRead(false)
-//                .exclusiveStartKey()
-                .build();
-        // Check if user feed metadata is same schema as regular feed metadata
-        Page<FeedMetadata> feedMetadataPage = feedMetadataTable.query(request)
-                .stream()
-                .limit(1)
-                .toList()
-                .get(0);
-        return feedMetadataPage;
-    }
-
-    // WriteTaleScreen, for users to link feeds to tale
     public Page<Feed> getNextFeedsPageByUserId(String userId) {
         Page<FeedMetadata> feedMetadataPage = getNextFeedsMetadataPageByUserId(userId);
         List<Feed> feedList = new ArrayList<>();
@@ -138,84 +168,82 @@ public class FeedRepository {
         return Page.create(feedList, feedMetadataPage.lastEvaluatedKey());
     }
 
-    // FeedScreen -> WriteFeedScreen (for read -> edit)
-    public Feed getFeedByFeedId(String feedId) {
-        FeedMetadata feedMetadata = feedMetadataTable.getItem(Key.builder()
-                .partitionValue("FEED#" + feedId)
-                .sortValue("#METADATA")
-                .build());
+    public List<Feed> getAllFeedsByUserId(String userId) {
+        List<Feed> allFeeds = new ArrayList<>();
+        List<FeedMetadata> allFeedMetadataList = getAllFeedsMetadataByUserId(userId);
+        allFeedMetadataList.forEach(feedMetadata -> {
+            System.out.println(feedMetadata);
+            List<FeedItem> feedItems = getAllFeedItemsByFeedId(feedMetadata.getId());
+            allFeeds.add(new Feed(feedMetadata, feedItems));
+        });
+
+        return allFeeds;
+    }
+
+    public Page<FeedMetadata> getNextFeedsMetadataPageByUserId(String userId) {
         QueryConditional conditional = QueryConditional.sortBeginsWith(
                 Key.builder()
-                        .partitionValue("FEED#" + feedId)
-                        .sortValue("FEED_ITEM#")
+                        .partitionValue("USER#" + userId)
+                        .sortValue("#METADATA_FEED#FEED#")
                         .build()
         );
         QueryEnhancedRequest request = QueryEnhancedRequest.builder()
                 .queryConditional(conditional)
-//                .limit(10)
-//                .scanIndexForward(false)
+                .limit(10)
+                .scanIndexForward(false)
+//                .filterExpression(Expression.builder().build())
+//                .consistentRead(false)
+//                .exclusiveStartKey()
                 .build();
-        List<FeedItem> feedItems = feedItemTable.query(request)
-                .items()
+        // Check if user feed metadata is same schema as regular feed metadata
+        Page<FeedMetadata> feedMetadataPage = feedMetadataTable.query(request)
                 .stream()
-                .sorted()
-                .toList();
-        return new Feed(feedMetadata, feedItems);
+                .limit(1)
+                .toList()
+                .get(0);
+        return feedMetadataPage;
     }
 
-    public List<Feed> getFeedsListByFeedIds(List<String> feedIds) {
-        List<Feed> feedList = new ArrayList<>();
-        feedIds.forEach(feedId -> {
-            feedList.add(getFeedByFeedId(feedId));
-        });
-        return feedList;
-    }
-
-    public List<FeedMetadata> getFeedMetadataListByFeedIds(List<String> feedIds) {
-        List<FeedMetadata> feedMetadataList = new ArrayList<>();
-        feedIds.forEach(id -> {
-            FeedMetadata metadata = feedMetadataTable.getItem(
-                    Key.builder()
-                            .partitionValue("FEED#" + id)
-                            .sortValue("#METADATA")
-                            .build());
-            feedMetadataList.add(metadata);
-        });
-        return feedMetadataList;
-    }
-
-    public FeedMetadata saveFeedMetadata(FeedMetadata feedMetadata) {
-        feedMetadataTable.putItem(feedMetadata);
-        return feedMetadata;
-    }
-
-    public BatchWriteResult batchSaveFeedItems(List<FeedItem> feedItems) {
-        List<WriteBatch> saveBatches = feedItems
-                .stream()
-                .map(item -> WriteBatch.builder(FeedItem.class)
-                        .mappedTableResource(feedItemTable)
-                        .addPutItem(item)
+    public List<FeedMetadata> getAllFeedsMetadataByUserId(String userId) {
+        List<FeedMetadata> allFeedMetadataList = new ArrayList<>();
+        QueryConditional conditional = QueryConditional.sortBeginsWith(Key.builder()
+                .partitionValue("METADATA_FEED")
+                .sortValue("FEED#")
+                .build());
+        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
+                .queryConditional(conditional)
+                .filterExpression(Expression.builder()
+                        .expression("creator.id=:userId")
+//                        .expressionNames(ImmutableMap.of("#creatorId", "creator.id")) // not working
+                        .expressionValues(ImmutableMap.of(":userId", AttributeValue.fromS(userId)))
                         .build())
-                .toList();
-
-        BatchWriteItemEnhancedRequest batchPutRequest = BatchWriteItemEnhancedRequest.builder()
-                .writeBatches(saveBatches)
+                .consistentRead(false) // TODO: should be true since we want to get every feed metadata?
                 .build();
+        SdkIterable<Page<FeedMetadata>> metadataPageIterable = feedMetadataTable.index("GSI1").query(request);
 
-        return dynamoDbEnhancedClient.batchWriteItem(batchPutRequest);
-    }
-
-    public List<FeedItem> batchUpdateFeedItems(List<FeedItem> feedItems) {
-        System.out.println("Batch updating feed items");
-        feedItems.forEach(feedItem -> {
-            FeedItem updatedFeedItem = feedItemTable.updateItem(feedItem);
-            System.out.println("Updated this feed item : " + updatedFeedItem);
+        metadataPageIterable.forEach(page -> {
+            allFeedMetadataList.addAll(page.items());
         });
 
-        return feedItems;
+        return allFeedMetadataList;
     }
 
-    // WriteFeedScreen (new)
+    public List<FeedMetadata> getAllUserFeedsMetadataByUserId(String userId) {
+        List<FeedMetadata> allFeedMetadataList = new ArrayList<>();
+        QueryConditional conditional = QueryConditional.sortBeginsWith(Key.builder()
+                .partitionValue(Feed.USER_PK_PREFIX + userId)
+                .sortValue(Feed.USER_SK_PREFIX)
+                .build());
+        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
+                .queryConditional(conditional)
+                .consistentRead(false) // TODO: should be true since fetching all?
+                .build();
+        SdkIterable<FeedMetadata> metadataPageIterable = feedMetadataTable.query(request).items();
+        metadataPageIterable.forEach(allFeedMetadataList::add);
+
+        return allFeedMetadataList;
+    }
+
     public Feed createNewFeed(Feed feed) {
         FeedMetadata feedMetadata = feed.getMetadata();
         feedMetadata.setPK("FEED#" + feedMetadata.getId());
@@ -246,41 +274,65 @@ public class FeedRepository {
         return feed;
     }
 
-    // WriteFeedScreen (edit)
-    public Feed updateFeed(Feed feed) {
-        FeedMetadata userFeedMetadata = new FeedMetadata(
-                feed.getMetadata().getCreator().getPK(),
-                "#METADATA_FEED#" + feed.getMetadata().getId(),
-                feed.getMetadata().getId(),
-                feed.getMetadata().getCreator(),
-                feed.getMetadata().getThumbnail(),
-                feed.getMetadata().getTaleId());
-        feedMetadataTable.updateItem(userFeedMetadata);
-        feedMetadataTable.updateItem(feed.getMetadata());
-        feed.getFeedItems().forEach(feedItem -> {
-            feedItemTable.updateItem(feedItem);
+    public BatchWriteResult batchSaveFeedItems(List<FeedItem> feedItems) {
+        List<WriteBatch> saveBatches = feedItems
+                .stream()
+                .map(item -> WriteBatch.builder(FeedItem.class)
+                        .mappedTableResource(feedItemTable)
+                        .addPutItem(item)
+                        .build())
+                .toList();
 
-            // Check if feed.getItems() has any items deleted compared to db, and delete those from db.
-        });
-        return feed;
+        BatchWriteItemEnhancedRequest batchPutRequest = BatchWriteItemEnhancedRequest.builder()
+                .writeBatches(saveBatches)
+                .build();
+
+        return dynamoDbEnhancedClient.batchWriteItem(batchPutRequest);
     }
 
-    public List<FeedMetadata> updateFeedsTaleId(List<FeedMetadata> feedMetadataList) {
+    public FeedMetadata saveFeedMetadata(FeedMetadata feedMetadata) {
+        feedMetadataTable.putItem(feedMetadata);
+        return feedMetadata;
+    }
+
+    public FeedMetadata updateFeedMetadata(FeedMetadata feedMetadata) {
+        UpdateItemEnhancedRequest<FeedMetadata> request = UpdateItemEnhancedRequest.builder(FeedMetadata.class)
+                .item(feedMetadata)
+                .ignoreNulls(true)
+                .build();
+
+        return feedMetadataTable.updateItem(request);
+    }
+
+    public FeedMetadata updateFeedMetadata(FeedMetadata feedMetadata, Boolean ignoreNulls) {
+        UpdateItemEnhancedRequest<FeedMetadata> request = UpdateItemEnhancedRequest.builder(FeedMetadata.class)
+                .item(feedMetadata)
+                .ignoreNulls(ignoreNulls)
+                .build();
+
+        return feedMetadataTable.updateItem(request);
+    }
+
+
+    public List<FeedMetadata> batchUpdateFeedMetadata(List<FeedMetadata> feedMetadataList) {
+        System.out.println("Batch updating feed metadata");
+        List<FeedMetadata> updatedFeedMetadataList = new ArrayList<>();
         feedMetadataList.forEach(feedMetadata -> {
-            feedMetadata.setId(null);
-            feedMetadata.setCreator(null);
-            feedMetadata.setThumbnail(null);
-            feedMetadata.setGSI1PK(null);
-            feedMetadata.setGSI1SK(null);
-            UpdateItemEnhancedRequest<FeedMetadata> request = UpdateItemEnhancedRequest.builder(FeedMetadata.class)
-                    .item(feedMetadata)
-                    .ignoreNulls(true)
-                    .build();
-            System.out.println("CCB: " + feedMetadata);
-            feedMetadataTable.updateItem(request);
+            FeedMetadata updatedMetadata = updateFeedMetadata(feedMetadata);
+            updatedFeedMetadataList.add(updatedMetadata);
         });
 
-        return getFeedMetadataListByFeedIds(feedMetadataList.stream().map(FeedMetadata::getId).toList());
+        return updatedFeedMetadataList;
+    }
+
+    public List<FeedItem> batchUpdateFeedItems(List<FeedItem> feedItems) {
+        System.out.println("Batch updating feed items");
+        feedItems.forEach(feedItem -> {
+            FeedItem updatedFeedItem = feedItemTable.updateItem(feedItem);
+            System.out.println("Updated this feed item : " + updatedFeedItem);
+        });
+
+        return feedItems;
     }
 
     public BatchWriteResult batchDeleteFeedItems(List<FeedItem> feedItems) {
@@ -303,7 +355,23 @@ public class FeedRepository {
         return dynamoDbEnhancedClient.batchWriteItem(batchDeleteRequest);
     }
 
-    // WriteFeedScreen (delete)
+    public List<FeedMetadata> updateFeedsTaleId(List<FeedMetadata> feedMetadataList) {
+        feedMetadataList.forEach(feedMetadata -> {
+            feedMetadata.setId(null);
+            feedMetadata.setCreator(null);
+            feedMetadata.setThumbnail(null);
+            feedMetadata.setGSI1PK(null);
+            feedMetadata.setGSI1SK(null);
+            UpdateItemEnhancedRequest<FeedMetadata> request = UpdateItemEnhancedRequest.builder(FeedMetadata.class)
+                    .item(feedMetadata)
+                    .ignoreNulls(true)
+                    .build();
+            feedMetadataTable.updateItem(request);
+        });
+
+        return getFeedMetadataListByFeedIds(feedMetadataList.stream().map(FeedMetadata::getId).toList());
+    }
+
     public Feed deleteFeed(Feed feed) {
         FeedMetadata userFeedMetadata = new FeedMetadata(
                 feed.getMetadata().getCreator().getPK(),
@@ -348,5 +416,25 @@ public class FeedRepository {
         // Check unprocessed items, and try to delete again
         return feed;
     }
+
+
+//    // WriteFeedScreen (edit)
+//    public Feed updateFeed(Feed feed) {
+//        FeedMetadata userFeedMetadata = new FeedMetadata(
+//                feed.getMetadata().getCreator().getPK(),
+//                "#METADATA_FEED#" + feed.getMetadata().getId(),
+//                feed.getMetadata().getId(),
+//                feed.getMetadata().getCreator(),
+//                feed.getMetadata().getThumbnail(),
+//                feed.getMetadata().getTaleId());
+//        feedMetadataTable.updateItem(userFeedMetadata);
+//        feedMetadataTable.updateItem(feed.getMetadata());
+//        feed.getFeedItems().forEach(feedItem -> {
+//            feedItemTable.updateItem(feedItem);
+//
+//            // Check if feed.getItems() has any items deleted compared to db, and delete those from db.
+//        });
+//        return feed;
+//    }
 
 }

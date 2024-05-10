@@ -15,38 +15,55 @@ public class UserConverter implements AttributeConverter<User> {
     // seemingly because every @DynamoDbConvertedBy results in a UserConverter constructor call, and spring is unaware of
     // this new instance, hence does not inject the MediaConverter bean here.
     private final MediaConverter mediaConverter;
+    private final InstantConverter instantConverter;
 
     public UserConverter() {
         System.out.println("UserConverter constructor called");
         this.mediaConverter = new MediaConverter();
+        this.instantConverter = new InstantConverter();
     }
 
     @Override
     public AttributeValue transformFrom(User user) {
-        return AttributeValue.fromM(
-                Map.of("PK", AttributeValue.fromS(user.getPK()),
-                        "SK", AttributeValue.fromS(user.getSK()),
-                        "id", AttributeValue.fromS(user.getId()),
-                        "name", AttributeValue.fromS(user.getName()),
-                        "handle", AttributeValue.fromS(user.getHandle()),
-                        "email", AttributeValue.fromS(user.getEmail()),
-                        "avatar", mediaConverter.transformFrom(user.getAvatar())
-                )
-        );
+        if (user.getCreatedAt() != null) {
+            return AttributeValue.fromM(
+                    Map.of("PK", AttributeValue.fromS(user.getPK()),
+                            "SK", AttributeValue.fromS(user.getSK()),
+                            "id", AttributeValue.fromS(user.getId()),
+                            "name", AttributeValue.fromS(user.getName()),
+                            "handle", AttributeValue.fromS(user.getHandle()),
+                            "email", AttributeValue.fromS(user.getEmail()),
+                            "avatar", mediaConverter.transformFrom(user.getAvatar()),
+                            "createdAt", instantConverter.transformFrom(user.getCreatedAt()),
+                            "isDeactivated", AttributeValue.fromBool(user.getIsDeactivated())
+                    )
+            );
+        } else {
+            return AttributeValue.fromM(
+                    Map.of("PK", AttributeValue.fromS(user.getPK()),
+                            "SK", AttributeValue.fromS(user.getSK()),
+                            "id", AttributeValue.fromS(user.getId()),
+                            "name", AttributeValue.fromS(user.getName()),
+                            "handle", AttributeValue.fromS(user.getHandle()),
+                            "email", AttributeValue.fromS(user.getEmail()),
+                            "avatar", mediaConverter.transformFrom(user.getAvatar()),
+                            "isDeactivated", AttributeValue.fromBool(user.getIsDeactivated())
+                    )
+            );
+        }
     }
 
     @Override
     public User transformTo(AttributeValue attributeValue) {
-//        System.out.println("Running transformTo in UserConverter");
         Map<String, AttributeValue> map = attributeValue.m();
-        Map<String, AttributeValue> avatarMap = map.get("avatar").m();
-//        System.out.println(mediaConverter);
         return new User(
                 map.get("id").s(),
                 map.get("name").s(),
                 map.get("handle").s(),
                 map.get("email").s(),
-                mediaConverter.transformTo(map.get("avatar"))
+                mediaConverter.transformTo(map.get("avatar")),
+                instantConverter.transformTo(map.get("createdAt")),
+                map.get("isDeactivated").bool()
         );
     }
 

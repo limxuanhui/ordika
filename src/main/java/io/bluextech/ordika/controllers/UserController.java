@@ -1,6 +1,7 @@
 package io.bluextech.ordika.controllers;
 /* Created by limxuanhui on 10/7/23 */
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.bluextech.ordika.dto.UserAuthRequestBody;
 import io.bluextech.ordika.models.User;
@@ -20,12 +21,11 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public User getUserByUserId(@PathVariable String userId) {
-        User user = userService.getUserByUserId(userId);
-        return user;
+        return userService.getUserByUserId(userId);
     }
 
     @PostMapping("/auth/signin")
-    public User signin(@RequestBody UserAuthRequestBody body) throws GeneralSecurityException, IOException {
+    public User signIn(@RequestBody UserAuthRequestBody body) throws GeneralSecurityException, IOException {
         User user = body.getUser();
         String idToken = body.getIdToken();
         final GoogleIdToken verifiedIdToken = userService.verifyIdToken(idToken);
@@ -38,6 +38,10 @@ public class UserController {
             // Check in repository if subject exists i.e. already have an account
             User existingUser = userService.getUserByUserId(subject);
             if (existingUser != null) {
+                if (existingUser.getIsDeactivated()) {
+                    System.out.println("Activating user...");
+                    return userService.activateUserByUserId(existingUser.getId());
+                }
                 return existingUser;
             } else {
                 // Subject does not exist in repository; create new account
@@ -45,6 +49,16 @@ public class UserController {
             }
         }
         return null;
+    }
+
+    @PostMapping("/deactivate-accounts/{userId}")
+    public User deactivateAccount(@PathVariable String userId) {
+        return userService.deactivateUserByUserId(userId);
+    }
+
+    @DeleteMapping("/delete-accounts/{userId}")
+    public User deleteAccount(@PathVariable String userId) throws JsonProcessingException {
+        return userService.deleteUserByUserId(userId);
     }
 
 }

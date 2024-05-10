@@ -57,6 +57,10 @@ public class FeedService {
         return new PagedResult<>(feedPage.items(), lastEvaluatedKey);
     }
 
+    public List<Feed> getAllFeedsByUserId(String userId) {
+        return feedRepository.getAllFeedsByUserId(userId);
+    }
+
     public PagedResult<FeedMetadata> getNextFeedsMetadataPageByUserId(String userId) throws JsonProcessingException {
         Page<FeedMetadata> feedMetadataPage = feedRepository.getNextFeedsMetadataPageByUserId(userId);
         String lastEvaluatedKey = null;
@@ -64,6 +68,46 @@ public class FeedService {
             lastEvaluatedKey = DynamoDbAttributeValueConverter.encodeKeyToBase64String(feedMetadataPage.lastEvaluatedKey());
         }
         return new PagedResult<>(feedMetadataPage.items(), lastEvaluatedKey);
+    }
+
+    public List<FeedMetadata> getAllFeedsMetadataByUserId(String userId) {
+        return feedRepository.getAllFeedsMetadataByUserId(userId);
+    }
+
+    public List<FeedMetadata> getAllUserFeedsMetadataByUserId(String userId) {
+        return feedRepository.getAllUserFeedsMetadataByUserId(userId);
+    }
+
+    public List<FeedMetadata> activateAllFeedsByUserId(String userId) {
+        List<FeedMetadata> allFeedsMetadata = getAllFeedsMetadataByUserId(userId);
+        List<FeedMetadata> allUserFeedsMetadata = getAllUserFeedsMetadataByUserId(userId);
+        allFeedsMetadata.addAll(allUserFeedsMetadata);
+        allFeedsMetadata.forEach(feedMetadata -> {
+            feedMetadata.getCreator().setIsDeactivated(false);
+            feedMetadata.setId(null);
+            feedMetadata.setThumbnail(null);
+            feedMetadata.setTaleId(null);
+            feedMetadata.setGSI1PK(null);
+            feedMetadata.setGSI1SK(null);
+        });
+
+        return feedRepository.batchUpdateFeedMetadata(allFeedsMetadata);
+    }
+
+    public List<FeedMetadata> deactivateAllFeedsByUserId(String userId) {
+        List<FeedMetadata> allFeedsMetadata = getAllFeedsMetadataByUserId(userId);
+        List<FeedMetadata> allUserFeedsMetadata = getAllUserFeedsMetadataByUserId(userId);
+        allFeedsMetadata.addAll(allUserFeedsMetadata);
+        allFeedsMetadata.forEach(feedMetadata -> {
+            feedMetadata.getCreator().setIsDeactivated(true);
+            feedMetadata.setId(null);
+            feedMetadata.setThumbnail(null);
+            feedMetadata.setTaleId(null);
+            feedMetadata.setGSI1PK(null);
+            feedMetadata.setGSI1SK(null);
+        });
+
+        return feedRepository.batchUpdateFeedMetadata(allFeedsMetadata);
     }
 
     public Feed createFeed(Feed feed) {
@@ -123,5 +167,7 @@ public class FeedService {
     public Feed deleteFeed(Feed feed) {
         return feedRepository.deleteFeed(feed);
     }
+
+//    public List<Feed> deleteAllFeedsByUserId()
 
 }

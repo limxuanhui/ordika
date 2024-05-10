@@ -39,6 +39,11 @@ public class FeedController {
         return feedService.getNextFeedsPageByUserId(userId);
     }
 
+    @GetMapping("/user/all/{userId}")
+    public List<Feed> getAllFeedsByUserId(@PathVariable String userId) {
+        return feedService.getAllFeedsByUserId(userId);
+    }
+
     @GetMapping("/metadata/user/{userId}")
     public PagedResult<FeedMetadata> getNextFeedsMetadataPageByUserId(@PathVariable String userId) throws JsonProcessingException {
         return feedService.getNextFeedsMetadataPageByUserId(userId);

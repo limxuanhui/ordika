@@ -7,6 +7,6 @@ import io.bluextech.ordika.models.StoryItem;
 import io.bluextech.ordika.models.TaleMetadata;
 
 public record UpdateTaleRequestBody(String taleId,
-                                    TaleMetadata metadata,
+                                    Delta<TaleMetadata> metadata,
                                     Delta<Route> routes,
                                     Delta<StoryItem> storyItems) {}

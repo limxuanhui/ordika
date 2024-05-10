@@ -8,6 +8,12 @@ import java.util.List;
 @Setter
 public class Feed {
 
+    public static final String PK_PREFIX = "FEED#";
+    public static final String SK_PREFIX = "#METADATA";
+    public static final String GSI1PK_PREFIX = "METADATA_FEED";
+    public static final String GSI1SK_PREFIX = "FEED#";
+    public static final String USER_PK_PREFIX = "USER#";
+    public static final String USER_SK_PREFIX = "#METADATA_FEED#FEED#";
     private FeedMetadata metadata;
     private List<FeedItem> feedItems;
 
