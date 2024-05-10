@@ -130,10 +130,8 @@ public class FeedRepository {
         });
 
         System.out.println("Time taken to get feed page (ms): " + (System.currentTimeMillis() - start));
-        System.out.println("FEEDS!!!: ");
-        System.out.println(feeds);
-        System.out.println("=====================");
         Map<String, AttributeValue> lastEvaluatedKey = feedMetadataPage.lastEvaluatedKey();
+
         return Page.create(feeds, lastEvaluatedKey);
     }
 

@@ -26,6 +26,8 @@ public class UserRepository {
     @Autowired
     private DynamoDbTable<TaleMetadata> taleMetadataTable;
     @Autowired
+    private DynamoDbTable<UserDeletionInfo> userDeletionInfoTable;
+    @Autowired
     private TaleService taleService;
 
     public User getUserMetadataByUserId(String userId) {
@@ -61,6 +63,30 @@ public class UserRepository {
         return userTable.updateItem(request);
     }
 
+    public UserDeletionInfo saveUserDeletionInfo(UserDeletionInfo userDeletionInfo) {
+        userDeletionInfoTable.putItem(userDeletionInfo);
+        return userDeletionInfo;
+    }
+
+    public UserDeletionInfo getUserDeletionInfoByUserId(String userId) {
+        return userDeletionInfoTable.getItem(Key.builder()
+                .partitionValue(UserDeletionInfo.PK_PREFIX)
+                .sortValue(UserDeletionInfo.SK_PREFIX + userId)
+                .build());
+    }
+
+    public UserDeletionInfo deleteUserDeletionInfoByUserId(String userId) {
+        UserDeletionInfo userDeletionInfo = getUserDeletionInfoByUserId(userId);
+        if (userDeletionInfo != null) {
+            userDeletionInfoTable.deleteItem(Key.builder()
+                    .partitionValue(UserDeletionInfo.PK_PREFIX)
+                    .sortValue(UserDeletionInfo.SK_PREFIX + userId)
+                    .build());
+        }
+
+        return userDeletionInfo;
+    }
+
     public User deleteUserByUserId(String userId) throws JsonProcessingException {
         List<Feed> userFeedsList = new ArrayList<>();// feedService.deleteAllFeedsByUserId(userId);
         List<Tale> userTalesList = new ArrayList<>();//taleService.deleteAllTalesByUserId(userId);
@@ -74,8 +100,8 @@ public class UserRepository {
 //        User user = getUserMetadataByUserId(userId);
 
         User deletedUser = userTable.deleteItem(Key.builder()
-                .partitionValue("USER#" + userId)
-                .sortValue("#METADATA")
+                .partitionValue(User.PK_PREFIX + userId)
+                .sortValue(User.SK_PREFIX)
                 .build());
 
         return deletedUser;

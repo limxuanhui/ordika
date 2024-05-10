@@ -1,24 +1,22 @@
 package io.bluextech.ordika.services;
 /* Created by limxuanhui on 11/7/23 */
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import io.bluextech.ordika.models.FeedMetadata;
-import io.bluextech.ordika.models.TaleMetadata;
 import io.bluextech.ordika.models.User;
+import io.bluextech.ordika.models.UserDeletionInfo;
 import io.bluextech.ordika.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.Instant;
 import java.util.Collections;
-import java.util.List;
 
 @Service
 public class UserService {
@@ -52,7 +50,7 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        return null;
+        return userRepository.updateUserMetadata(user);
     }
 
     public User activateUserByUserId(String userId) {
@@ -65,13 +63,10 @@ public class UserService {
         updatedUser.setCreatedAt(null);
         updatedUser.setIsDeactivated(false);
 
+        feedService.activateAllFeedsByUserId(userId);
+        taleService.activateAllTalesByUserId(userId);
 
-        List<FeedMetadata> allFeedMetadataList = feedService.activateAllFeedsByUserId(userId);
-        List<TaleMetadata> allTaleMetadataList = taleService.activateAllTalesByUserId(userId);
-//        BaseMetadata itineraryMetadata;
-
-
-        return userRepository.updateUserMetadata(updatedUser);
+        return updateUser(updatedUser);
     }
 
     public User deactivateUserByUserId(String userId) {
@@ -84,15 +79,23 @@ public class UserService {
         updatedUser.setCreatedAt(null);
         updatedUser.setIsDeactivated(true);
 
-        List<FeedMetadata> allFeedMetadataList = feedService.deactivateAllFeedsByUserId(userId);
-        List<TaleMetadata> allTaleMetadataList = taleService.deactivateAllTalesByUserId(userId);
-//        BaseMetadata itineraryMetadata;
+        feedService.deactivateAllFeedsByUserId(userId);
+        taleService.deactivateAllTalesByUserId(userId);
 
-        return userRepository.updateUserMetadata(updatedUser);
+        return updateUser(updatedUser);
     }
 
-    public User deleteUserByUserId(String userId) throws JsonProcessingException {
-        return userRepository.deleteUserByUserId(userId);
+    public UserDeletionInfo saveUserDeletionRequest(String userId) {
+        UserDeletionInfo userDeletionInfo = new UserDeletionInfo(userId, Instant.now());
+        return userRepository.saveUserDeletionInfo(userDeletionInfo);
+    }
+
+    public UserDeletionInfo removeUserDeletionRequest(String userId) {
+        return userRepository.deleteUserDeletionInfoByUserId(userId);
+    }
+
+    public UserDeletionInfo checkForUserDeletionRequest(String userId) {
+        return userRepository.getUserDeletionInfoByUserId(userId);
     }
 
 }

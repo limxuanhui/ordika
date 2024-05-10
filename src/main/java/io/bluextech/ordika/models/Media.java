@@ -3,11 +3,9 @@ package io.bluextech.ordika.models;
 
 import lombok.Getter;
 import lombok.Setter;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 
 @Getter
 @Setter
-@DynamoDbBean
 public class Media {
 
     private String id;

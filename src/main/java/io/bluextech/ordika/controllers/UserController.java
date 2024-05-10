@@ -1,10 +1,10 @@
 package io.bluextech.ordika.controllers;
 /* Created by limxuanhui on 10/7/23 */
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.bluextech.ordika.dto.UserAuthRequestBody;
 import io.bluextech.ordika.models.User;
+import io.bluextech.ordika.models.UserDeletionInfo;
 import io.bluextech.ordika.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +40,10 @@ public class UserController {
             if (existingUser != null) {
                 if (existingUser.getIsDeactivated()) {
                     System.out.println("Activating user...");
+                    UserDeletionInfo userDeletionInfo = userService.checkForUserDeletionRequest(existingUser.getId());
+                    if (userDeletionInfo != null) {
+                        userService.removeUserDeletionRequest(existingUser.getId());
+                    }
                     return userService.activateUserByUserId(existingUser.getId());
                 }
                 return existingUser;
@@ -57,8 +61,9 @@ public class UserController {
     }
 
     @DeleteMapping("/delete-accounts/{userId}")
-    public User deleteAccount(@PathVariable String userId) throws JsonProcessingException {
-        return userService.deleteUserByUserId(userId);
+    public UserDeletionInfo markUserForDeletion(@PathVariable String userId) {
+        userService.deactivateUserByUserId(userId);
+        return userService.saveUserDeletionRequest(userId);
     }
 
 }
