@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class OrdikaDirections {
-    private List<DirectionsResult> directionsResultList;
 
+    private List<DirectionsResult> directionsResultList;
     private List<Integer> order;
 
     public OrdikaDirections(List<DirectionsResult> directionsResultList, List<Integer> order) {

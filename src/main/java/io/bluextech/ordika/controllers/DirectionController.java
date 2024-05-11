@@ -7,7 +7,10 @@ import io.bluextech.ordika.models.OrdikaDirections;
 import io.bluextech.ordika.services.DirectionService;
 import io.bluextech.ordika.services.DistanceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
@@ -17,7 +20,6 @@ public class DirectionController {
 
     @Autowired
     private DirectionService directionsService;
-
     @Autowired
     private DistanceService distanceService;
 
@@ -29,7 +31,7 @@ public class DirectionController {
                 .toList();
     }
 
-    private List<Integer> getOrder(DistanceMatrix distanceMatrix) {
+    private List<Integer> getOrder(DistanceMatrix distanceMatrix) throws Exception {
         Map<Integer, Boolean> visited = new HashMap<>();
         List<Integer> orderedRoute = new ArrayList<>();
 
@@ -42,6 +44,10 @@ public class DirectionController {
 
         // For every row in distance matrix
         while (!unvisited.isEmpty()) {
+            if (currentIdx == -1) {
+                return new ArrayList<>();
+            }
+
             DistanceMatrixRow row = distanceMatrix.rows[currentIdx];
 
             // Find next nearest unvisited city
@@ -78,6 +84,11 @@ public class DirectionController {
 
     <T> List<T> getOrderedRoute(List<T> list, List<Integer> order) {
         List<T> newList = new ArrayList<>();
+
+        if (order.size() == 0) {
+            return newList;
+        }
+
         for (int i = 0; i < list.size(); i++) {
             int nextId = order.get(i);
             newList.add(list.get(nextId));
@@ -86,10 +97,14 @@ public class DirectionController {
     }
 
     @PostMapping()
-    public OrdikaDirections getDirections(@RequestBody List<Coordinates> coordinatesList) {
+    public OrdikaDirections getDirections(@RequestBody List<Coordinates> coordinatesList) throws Exception {
         System.out.println("--- Coordinates List ---");
         System.out.println(coordinatesList);
         // Check if place_id exists - if yes we use placeId list instead of coordinates
+
+        if (coordinatesList.size() < 2) {
+            return null;
+        }
 
         // Pass coordinates and get distance matrix
         DistanceMatrix distanceMatrix = distanceService.getDistanceMatrix(coordinatesList);
@@ -98,6 +113,7 @@ public class DirectionController {
         // Route nodes in sequence that leads to "shortest path" (shortest as in distance or time)
         List<Integer> order = getOrder(distanceMatrix);
         List<Coordinates> orderedRoute = getOrderedRoute(coordinatesList, order);
+        System.out.println("Order: " + order);
         System.out.println("Ordered route: " + orderedRoute);
 
         // With "shortest path" sequence of route nodes, get direction instructions for each consecutive pair

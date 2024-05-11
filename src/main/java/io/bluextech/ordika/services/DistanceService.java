@@ -8,6 +8,7 @@ import com.google.maps.model.DistanceMatrix;
 import com.google.maps.model.LatLng;
 import com.google.maps.model.TravelMode;
 import com.google.maps.model.Unit;
+import io.bluextech.ordika.configs.GoogleDirectionsApiConfig;
 import io.bluextech.ordika.models.Coordinates;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,8 @@ public class DistanceService {
     // Set up GeoApiContext, refactor it to be singleton
     @Autowired
     private GeoApiContext geoApiContext;
+    @Autowired
+    private GoogleDirectionsApiConfig googleDirectionsApiConfig;
 
     public DistanceMatrix getDistanceMatrix(List<Coordinates> coordinatesList) {
         List<LatLng> origins = coordinatesList.stream()
@@ -30,8 +33,8 @@ public class DistanceService {
                 .map(coordinates -> new LatLng(coordinates.getLatitude(), coordinates.getLongitude()))
                 .toList();
 
-        TravelMode mode = TravelMode.DRIVING;
-        Unit unit = Unit.METRIC;
+        TravelMode mode = TravelMode.valueOf(googleDirectionsApiConfig.getMODE()); //TravelMode.DRIVING;
+        Unit unit = Unit.valueOf(googleDirectionsApiConfig.getUNITS());
         DistanceMatrix distanceMatrix = null;
         DistanceMatrixApiRequest distanceMatrixApiRequest = new DistanceMatrixApiRequest(geoApiContext);
         try {
@@ -42,11 +45,7 @@ public class DistanceService {
                     .units(unit)
                     .await();
 
-        } catch (ApiException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (ApiException | InterruptedException | IOException e) {
             e.printStackTrace();
         }
 

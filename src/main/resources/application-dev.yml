@@ -7,9 +7,9 @@ google:
   api:
     directions:
       API_KEY: AIzaSyBd2XmXBRgtq2LGbo9HMEUgpfS2ZgXCfpk.
-      UNITS: metric
-      MODE: transit
-      TRANSIT_MODE: rail
+      UNITS: METRIC
+      MODE: TRANSIT #
+      TRANSIT_MODE: TRAIN # rail
       OUTPUT_FORMAT: json
       BASE_URL: https://maps.googleapis.com/maps/api/distancematrix
 

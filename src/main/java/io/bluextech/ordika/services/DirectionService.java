@@ -6,6 +6,7 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.LatLng;
+import com.google.maps.model.TransitMode;
 import com.google.maps.model.TravelMode;
 import io.bluextech.ordika.configs.GoogleDirectionsApiConfig;
 import io.bluextech.ordika.models.Coordinates;
@@ -19,7 +20,6 @@ public class DirectionService {
 
     @Autowired
     private GeoApiContext geoApiContext;
-
     @Autowired
     private GoogleDirectionsApiConfig googleDirectionsApiConfig;
 
@@ -36,14 +36,13 @@ public class DirectionService {
             directionsResult = directionsApiRequest
                     .origin(start)
                     .destination(end)
-                    .mode(TravelMode.DRIVING)
-//                    .transitMode(TransitMode.)
+                    .mode(TravelMode.valueOf(googleDirectionsApiConfig.getMODE()))
+//                    .mode(TravelMode.DRIVING)
+//                    .transitMode(TransitMode.TRAIN)
+                    .transitMode(TransitMode.valueOf(googleDirectionsApiConfig.getTRANSIT_MODE()))
                     .await();
-        } catch (ApiException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (ApiException | InterruptedException | IOException e) {
+            System.out.println(e);
             e.printStackTrace();
         }
 
