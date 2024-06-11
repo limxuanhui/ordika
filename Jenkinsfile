@@ -1,4 +1,6 @@
 pipeline {
+    agent any
+
     stages {
         // Stage to checkout the pipeline repository
         stage('Checkout Pipeline Repo') {
