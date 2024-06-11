@@ -18,7 +18,7 @@ pipeline {
             //         label 'build-agent' // Replace with your agent label
             //     }
             steps {
-                load 'pipeline.groovy'
+                load 'Jenkinsfile'
             }
         }
     }
