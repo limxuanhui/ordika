@@ -6,8 +6,8 @@ node {
             url: 'https://github.com/BlueXTech/pipeline.git'
     }
 
-    // Load the Jenkinsfile from the pipeline repository and execute it
-    stage('Execute Pipeline') {
-        load 'Jenkinsfile'
-    }
+//     // Load the Jenkinsfile from the pipeline repository and execute it
+//     stage('Execute Pipeline') {
+//         load 'Jenkinsfile'
+//     }
 }
