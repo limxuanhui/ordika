@@ -1,29 +1,19 @@
-pipeline {
-    agent any
-
-    tools {
-        // Install the Maven version configured as "M3" and add it to the path.
-        jdk "jdk17"
-        maven "maven3"
+// Stage to checkout the pipeline repository
+stage('Checkout Pipeline Repo') {
+    steps {
+        git branch: 'TestDevOps',
+            credentialsId: 'limxuanhui',
+            url: 'https://github.com/BlueXTech/pipeline.git'
     }
+}
 
-    stages {
-        stage('Build') {
-            steps {
-                sh "mvn -Dmaven.test.failure.ignore=true clean package"
-
-                // To run Maven on a Windows agent, use
-                // bat "mvn -Dmaven.test.failure.ignore=true clean package"
-            }
-
-            post {
-                // If Maven was able to run the tests, even if some of the test
-                // failed, record the test results and archive the jar file.
-                success {
-                    junit '**/target/surefire-reports/TEST-*.xml'
-                    archiveArtifacts 'target/*.jar'
-                }
-            }
-        }
+// Load the Jenkinsfile from the pipeline repository and execute it
+stage('Execute Pipeline') {
+//     // Optional: Specify a node with appropriate resources if needed
+//     node {
+//         label 'build-agent' // Replace with your agent label
+//     }
+    steps {
+        load 'pipeline.groovy'
     }
 }
