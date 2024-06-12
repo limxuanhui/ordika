@@ -1,3 +1,4 @@
+@library('shared-pipeline')
 triggerPipeline {
     branch = 'TestDevOps'
     scmUrl = 'https://github.com/BlueXTech/ordika.git'
