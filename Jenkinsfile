@@ -1,4 +1,5 @@
 pipeline {
+    agent any
     // Stage to checkout the pipeline repository
 //     stage('Checkout Pipeline Repo') {
 //         git branch: 'TestDevOps',
