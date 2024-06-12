@@ -10,7 +10,9 @@ pipeline {
 //     stage('Execute Pipeline') {
 //         load 'Jenkinsfile'
 //     }
-    stage('Trigger CI/CD Pipeline') {
-        build job: 'test-pipeline'
+    stages {
+        stage('Trigger CI/CD Pipeline') {
+            build job: 'test-pipeline'
+        }
     }
 }
