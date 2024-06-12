@@ -13,7 +13,9 @@ pipeline {
 //     }
     stages {
         stage('Trigger CI/CD Pipeline') {
-            build job: 'test-pipeline'
+            steps {
+                build job: 'test-pipeline'
+            }
         }
     }
 }
