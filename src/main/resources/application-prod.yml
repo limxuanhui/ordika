@@ -1,0 +1,22 @@
+spring:
+  cloud:
+    config:
+      uri: http://localhost:8888
+
+google:
+  api:
+    directions:
+      API_KEY: AIzaSyBd2XmXBRgtq2LGbo9HMEUgpfS2ZgXCfpk.
+      UNITS: METRIC
+      MODE: TRANSIT
+      TRANSIT_MODE: TRAIN
+      OUTPUT_FORMAT: json
+      BASE_URL: https://maps.googleapis.com/maps/api/distancematrix
+
+amazon:
+  aws:
+    dynamodb:
+      REGION: ap-southeast-1
+      TABLE_NAME: orang3-dev-table
+      ACCESS_KEY_ID: <orang3-access-key-id-of-prod-user>
+      SECRET_ACCESS_KEY: <orang3-secret-access-key-of-prod-user>

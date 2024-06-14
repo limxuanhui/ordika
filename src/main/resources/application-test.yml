@@ -16,8 +16,7 @@ google:
 amazon:
   aws:
     dynamodb:
-      ENDPOINT: http://dynamodb-local:8000 # http://localhost:8000 if running outside docker container
       REGION: ap-southeast-1
-      TABLE_NAME: sundaytable
-      ACCESS_KEY_ID: DUMMYACCESSKEYID
-      SECRET_ACCESS_KEY: DUMMYSECRETACCESSKEY
+      TABLE_NAME: orang3-dev-table
+      ACCESS_KEY_ID: AKIAUFIGDK4UOVXH7V56
+      SECRET_ACCESS_KEY: OWZ6OWvcMS7i58BF+PGD5ADoItSCAR7EbV042I9B
