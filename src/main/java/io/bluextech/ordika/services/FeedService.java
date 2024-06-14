@@ -158,9 +158,6 @@ public class FeedService {
 
     public List<FeedMetadata> updateFeedsTaleId(List<FeedMetadata> feedsMetadata) {
         System.out.println("Updating feeds tale id...");
-        feedsMetadata.forEach(feedMetadata -> {
-            System.out.println("feedid: " + feedMetadata.getId() + " | taleid: " + feedMetadata.getTaleId());
-        });
         return feedRepository.updateFeedsTaleId(feedsMetadata);
     }
 

@@ -59,10 +59,6 @@ public class TaleController {
 
     @PutMapping("/edit")
     public Tale updateTale(@RequestBody UpdateTaleRequestBody body) {
-        System.out.println("TALEID: " + body.taleId());
-        System.out.println("METADATA:" + body.metadata());
-        System.out.println("ROUTES: " + body.routes());
-        System.out.println("STORY ITEMS: " + body.storyItems());
         return taleService.updateTale(body);
     }
 
