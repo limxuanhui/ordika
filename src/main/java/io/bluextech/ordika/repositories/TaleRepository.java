@@ -478,11 +478,11 @@ public class TaleRepository {
 
             if (deletedCoverIds != null && !deletedCoverIds.isEmpty()) {
                 if (modifiedMetadata.getCover() == null) {
-                    // deleted old, no new
+                    // TODO: delete old cover media, no new
                     TaleMetadata updatedMetadata = updateTaleMetadata(modifiedMetadata, false);
                     TaleMetadata updatedUserTaleMetadata = updateTaleMetadata(userTaleMetadata, false);
                 } else {
-                    // deleted old, added new
+                    // TODO: delete old cover media, added new
                     modifiedMetadata.setGSI1PK(null);
                     modifiedMetadata.setGSI1SK(null);
                     modifiedMetadata.setId(null);

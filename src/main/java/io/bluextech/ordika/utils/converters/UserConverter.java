@@ -1,4 +1,4 @@
-package io.bluextech.ordika.utils;
+package io.bluextech.ordika.utils.converters;
 /* Created by limxuanhui on 10/3/24 */
 
 import io.bluextech.ordika.models.User;

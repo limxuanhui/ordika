@@ -1,22 +1,47 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.security: trace
+
+ordika:
+  auth:
+    ACCESS_TOKEN_VALID_DURATION_MS: 1000 * 60 * 60 * 30
+    REFRESH_TOKEN_VALID_DURATION_MS: 1000 * 60 * 60 * 30
+    SECRET_KEY:
+
 spring:
   cloud:
     config:
       uri: http://localhost:8888
 
+#spring:
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#
+
 google:
+  client:
+    CLIENT_ID: 240016316671-bbb96sgu5i31ahsdro89fi7va1dr50r5.apps.googleusercontent.com
   api:
     directions:
-      API_KEY: AIzaSyBd2XmXBRgtq2LGbo9HMEUgpfS2ZgXCfpk.
+      API_KEY: AIzaSyBd2XmXBRgtq2LGbo9HMEUgpfS2ZgXCfpk
       UNITS: METRIC
       MODE: TRANSIT
       TRANSIT_MODE: TRAIN
       OUTPUT_FORMAT: json
       BASE_URL: https://maps.googleapis.com/maps/api/distancematrix
 
+    places:
+      API_KEY: AIzaSyDzbu4jk9xzc2_2thqlcTD6fwIrhpR4aPI
+
 amazon:
   aws:
     dynamodb:
-      ENDPOINT: http://dynamodb-local:8000 # http://localhost:8000 if running outside docker container
+      ENDPOINT: http://localhost:8000 # http://dynamodb-local:8000 #  if running ordika outside docker container
       REGION: ap-southeast-1
       TABLE_NAME: sundaytable
       ACCESS_KEY_ID: DUMMYACCESSKEYID

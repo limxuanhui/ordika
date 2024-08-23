@@ -1,4 +1,4 @@
-package io.bluextech.ordika.utils;
+package io.bluextech.ordika.utils.converters;
 /* Created by limxuanhui on 8/5/24 */
 
 import software.amazon.awssdk.enhanced.dynamodb.AttributeConverter;
