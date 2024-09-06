@@ -51,7 +51,7 @@ public class DynamoDbConfig {
         AwsCredentialsProvider provider;
         DynamoDbClientBuilder builder = DynamoDbClient.builder().region(REGION);
 
-        if (PROFILE.contains("local") || Objects.equals(PROFILE, "test")) {
+        if (PROFILE.contains("local") || PROFILE.contains("dev") || Objects.equals(PROFILE, "test")) {
             builder.endpointOverride(URI.create(ENDPOINT));
             AwsBasicCredentials credentials = AwsBasicCredentials.create(ACCESS_KEY_ID, SECRET_ACCESS_KEY);
             provider = StaticCredentialsProvider.create(credentials);

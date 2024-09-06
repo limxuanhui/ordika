@@ -35,5 +35,8 @@ build/
 ### DS_Store ###
 .DS_Store
 
-### Dynamodb local
+### Dynamodb local ###
 src/main/resources/db/docker
+
+### env properties files ###
+env-*.properties

@@ -15,7 +15,6 @@
 	<description>Spring Boot Application for Ordika</description>
 	<properties>
 		<java.version>17</java.version>
-<!--		<spring-cloud.version>2022.0.0</spring-cloud.version>-->
 	</properties>
 
 	<dependencyManagement>
@@ -171,10 +170,29 @@
 	</dependencies>
 
 	<build>
+		<finalName>ordika-${maven.build.timestamp}</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>db/**</exclude>
+				</excludes>
+			</resource>
+		</resources>
+
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<spring.profiles.active>test</spring.profiles.active>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
