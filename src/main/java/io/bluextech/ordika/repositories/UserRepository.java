@@ -4,6 +4,8 @@ package io.bluextech.ordika.repositories;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.bluextech.ordika.models.*;
 import io.bluextech.ordika.services.TaleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
@@ -17,6 +19,7 @@ import java.util.List;
 @Repository
 public class UserRepository {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserRepository.class);
     @Autowired
     private DynamoDbTable<User> userTable;
     @Autowired
@@ -31,7 +34,7 @@ public class UserRepository {
     private TaleService taleService;
 
     public User getUserMetadataByUserId(String userId) {
-        System.out.println("Finding user with userId: " + userId);
+        LOGGER.info("Finding user with userId: " + userId);
         return userTable.getItem(Key.builder()
                 .partitionValue(User.PK_PREFIX + userId)
                 .sortValue(User.SK_PREFIX)
@@ -40,12 +43,13 @@ public class UserRepository {
     }
 
     public User createUser(User user) {
+        LOGGER.info("Creating user with userId: " + user.getId());
         try {
             user.setPK(User.PK_PREFIX + user.getId());
             user.setSK(User.SK_PREFIX);
             userTable.putItem(user);
         } catch (RuntimeException e) {
-            System.out.println("Error creating user: " + e.getMessage());
+            LOGGER.error("Error creating user: " + e.getMessage());
         }
 
         return userTable.getItem(Key.builder()

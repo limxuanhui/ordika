@@ -41,10 +41,8 @@ public class TaleController {
             }
         });
         List<Feed> feedList = feedService.getFeedsListByFeedIds(feedIds);
-        TaleViewBody c = new TaleViewBody(tale, feedList);
-        System.out.println("Get tale by tale id");
-        System.out.println(c);
-        return c;
+
+        return new TaleViewBody(tale, feedList);
     }
 
     @GetMapping("/metadata/user/{userId}")

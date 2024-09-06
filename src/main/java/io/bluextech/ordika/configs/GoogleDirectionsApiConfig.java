@@ -21,9 +21,7 @@ public class GoogleDirectionsApiConfig {
     private String OUTPUT_FORMAT;
     private String BASE_URL;
 
-    public GoogleDirectionsApiConfig() {
-        System.out.println("Google directions api config constructor called");
-    }
+    public GoogleDirectionsApiConfig() {}
 
     @Bean
     public GeoApiContext geoApiContext() {

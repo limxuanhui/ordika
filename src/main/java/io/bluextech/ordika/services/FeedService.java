@@ -9,6 +9,8 @@ import io.bluextech.ordika.models.FeedMetadata;
 import io.bluextech.ordika.models.PagedResult;
 import io.bluextech.ordika.repositories.FeedRepository;
 import io.bluextech.ordika.utils.converters.DynamoDbAttributeValueConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
@@ -20,6 +22,7 @@ import java.util.Map;
 @Service
 public class FeedService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeedService.class);
     @Autowired
     private FeedRepository feedRepository;
 
@@ -116,7 +119,6 @@ public class FeedService {
 
     public UpdateFeedRequestBody updateFeed(UpdateFeedRequestBody body) {
         FeedMetadata feedMetadata = body.getMetadata();
-        System.out.println("FEED metadata: " + feedMetadata);
         if (feedMetadata != null) {
             feedMetadata.setPK("FEED#" + feedMetadata.getId());
             feedMetadata.setSK("#METADATA");
@@ -157,14 +159,12 @@ public class FeedService {
     }
 
     public List<FeedMetadata> updateFeedsTaleId(List<FeedMetadata> feedsMetadata) {
-        System.out.println("Updating feeds tale id...");
+        LOGGER.info("Updating feeds tale id...");
         return feedRepository.updateFeedsTaleId(feedsMetadata);
     }
 
     public Feed deleteFeed(Feed feed) {
         return feedRepository.deleteFeed(feed);
     }
-
-//    public List<Feed> deleteAllFeedsByUserId()
 
 }

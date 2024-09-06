@@ -18,7 +18,6 @@ public class Feed {
     private List<FeedItem> feedItems;
 
     public Feed(FeedMetadata metadata, List<FeedItem> feedItems) {
-        System.out.println("METADATA:" + metadata);
         this.metadata = metadata;
         this.feedItems = feedItems;
     }

@@ -12,13 +12,12 @@ import java.util.Map;
 public class UserConverter implements AttributeConverter<User> {
 
     // Tried to use the bean method to autowire a MediaConverter bean, but it always causes NullPointerException,
-    // seemingly because every @DynamoDbConvertedBy results in a UserConverter constructor call, and spring is unaware of
-    // this new instance, hence does not inject the MediaConverter bean here.
+    // seemingly because every @DynamoDbConvertedBy results in a UserConverter constructor call,
+    // and spring is unaware of this new instance, hence does not inject the MediaConverter bean here.
     private final MediaConverter mediaConverter;
     private final InstantConverter instantConverter;
 
     public UserConverter() {
-        System.out.println("UserConverter constructor called");
         this.mediaConverter = new MediaConverter();
         this.instantConverter = new InstantConverter();
     }

@@ -11,9 +11,7 @@ import java.util.Map;
 
 public class MediaConverter implements AttributeConverter<Media> {
 
-    public MediaConverter() {
-        System.out.println("MediaConverter constructor called");
-    }
+    public MediaConverter() {}
 
     @Override
     public AttributeValue transformFrom(Media media) {

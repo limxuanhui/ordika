@@ -5,6 +5,8 @@ import io.bluextech.ordika.models.Feed;
 import io.bluextech.ordika.models.FeedItem;
 import io.bluextech.ordika.models.FeedMetadata;
 import io.bluextech.ordika.models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
@@ -24,6 +26,7 @@ import java.util.Map;
 @Repository
 public class FeedRepository {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeedRepository.class);
     @Autowired
     private DynamoDbClient dynamoDbClient;
     @Autowired
@@ -80,6 +83,7 @@ public class FeedRepository {
                             .build());
             feedMetadataList.add(metadata);
         });
+
         return feedMetadataList;
     }
 
@@ -129,7 +133,7 @@ public class FeedRepository {
             feeds.add(new Feed(feedMetadata, feedItems));
         });
 
-        System.out.println("Time taken to get feed page (ms): " + (System.currentTimeMillis() - start));
+        LOGGER.info("Time taken to get feed page (ms): " + (System.currentTimeMillis() - start));
         Map<String, AttributeValue> lastEvaluatedKey = feedMetadataPage.lastEvaluatedKey();
 
         return Page.create(feeds, lastEvaluatedKey);
@@ -170,7 +174,6 @@ public class FeedRepository {
         List<Feed> allFeeds = new ArrayList<>();
         List<FeedMetadata> allFeedMetadataList = getAllFeedsMetadataByUserId(userId);
         allFeedMetadataList.forEach(feedMetadata -> {
-            System.out.println(feedMetadata);
             List<FeedItem> feedItems = getAllFeedItemsByFeedId(feedMetadata.getId());
             allFeeds.add(new Feed(feedMetadata, feedItems));
         });
@@ -313,7 +316,7 @@ public class FeedRepository {
 
 
     public List<FeedMetadata> batchUpdateFeedMetadata(List<FeedMetadata> feedMetadataList) {
-        System.out.println("Batch updating feed metadata");
+        LOGGER.info("Batch updating feed metadata");
         List<FeedMetadata> updatedFeedMetadataList = new ArrayList<>();
         feedMetadataList.forEach(feedMetadata -> {
             FeedMetadata updatedMetadata = updateFeedMetadata(feedMetadata);
@@ -324,10 +327,9 @@ public class FeedRepository {
     }
 
     public List<FeedItem> batchUpdateFeedItems(List<FeedItem> feedItems) {
-        System.out.println("Batch updating feed items");
+        LOGGER.info("Batch updating feed items");
         feedItems.forEach(feedItem -> {
             FeedItem updatedFeedItem = feedItemTable.updateItem(feedItem);
-            System.out.println("Updated this feed item : " + updatedFeedItem);
         });
 
         return feedItems;
@@ -387,8 +389,8 @@ public class FeedRepository {
                         .build())
                 .build();
         FeedMetadata deletedMetadata = feedMetadataTable.deleteItem(metadataRequest);
-        System.out.println("deleted metadata");
-        System.out.println(deletedMetadata);
+        LOGGER.info("Deleted metadata: " + deletedMetadata);
+
         // Check if index entries are deleted?
 
 //        // Get list of feed item id, then delete them
@@ -408,8 +410,7 @@ public class FeedRepository {
 //                .toList();
 
         BatchWriteResult batchDeleteResult = batchDeleteFeedItems(feed.getFeedItems());
-        System.out.println("Deleted feed items");
-        System.out.println(batchDeleteResult);
+        LOGGER.info("Deleted feed items: " + batchDeleteResult);
 
         // Check unprocessed items, and try to delete again
         return feed;

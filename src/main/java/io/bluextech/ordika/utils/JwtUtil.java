@@ -1,32 +1,60 @@
 package io.bluextech.ordika.utils;
 /* Created by limxuanhui on 12/8/24 */
 
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwsHeader;
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Deserializer;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@Getter
 @Component
 public class JwtUtil {
 
-    @Value("${ordika.auth.ACCESS_TOKEN_VALID_DURATION_MS}")
-    private final Integer ACCESS_TOKEN_VALID_DURATION_MS = 1000 * 60 * 60 * 30;
-    private final String SECRET_KEY = "secret";
+    private final String JWT_SECRET;
+    private final Deserializer<Map<String, ?>> deserializer;
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public JwtUtil(@Value("${ordika.auth.JWT_SECRET}") String JWT_SECRET) {
+        this.JWT_SECRET = JWT_SECRET;
+        this.deserializer = new JacksonDeserializer<>();
     }
 
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    public SecretKey getSecretKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public JwsHeader extractHeader(String token) {
+        return Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getHeader();
+    }
+
+    public Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -34,41 +62,53 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getKey())
+    @SuppressWarnings("unchecked")
+    public <T> T extractCustomClaim(String token, String key) {
+        Jwt<?, ?> parsedToken = Jwts.parser().json(deserializer)
+                .verifyWith(getSecretKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parse(token);
+
+        Map<String, Object> parsedPayload = (Map<String, Object>) parsedToken.getPayload();
+        return (T) parsedPayload.get(key);
     }
 
-    private SecretKey getKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    public String extractSubject(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
     }
 
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateJwt(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername());
+    public Boolean isTokenValid(String token, String userId) {
+        final String subject = extractSubject(token);
+        return subject.equals(userId) && !isTokenExpired(token);
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    public String createToken(String subject, Map<String, Object> claims, Long tokenValidityMs) {
         return Jwts.builder()
-                .claims().add(claims)
+                .header().type("JWT").and()
                 .subject(subject)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALID_DURATION_MS))
-                .and()
-                .signWith(getKey())
+                .expiration(new Date(System.currentTimeMillis() + tokenValidityMs))
+                .claims().add(claims).and()
+                .signWith(getSecretKey())
                 .compact();
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withSecretKey(getSecretKey()).build();
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder() {
+        return new NimbusJwtEncoder(new ImmutableSecret<>(getSecretKey()));
     }
 
 }

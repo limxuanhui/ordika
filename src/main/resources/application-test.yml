@@ -1,22 +1,35 @@
-spring:
-  cloud:
-    config:
-      uri: http://localhost:8888
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.security: INFO # TRACE
+
+ordika:
+  auth:
+    ACCESS_TOKEN_VALID_DURATION_MS: 3600000 # 60min
+    REFRESH_TOKEN_VALID_DURATION_MS: 86400000 # 24h
+    JWT_SECRET: iKvtaJZ0UFQrZmg3EBn3oFT8BTekEk0sABCDEFGHIJKL # random 256 bits string
 
 google:
+  client:
+    CLIENT_ID: DUMMYCLIENTID
   api:
     directions:
-      API_KEY: AIzaSyBd2XmXBRgtq2LGbo9HMEUgpfS2ZgXCfpk.
+      API_KEY: DUMMYAPIKEY
       UNITS: METRIC
       MODE: TRANSIT
       TRANSIT_MODE: TRAIN
       OUTPUT_FORMAT: json
       BASE_URL: https://maps.googleapis.com/maps/api/distancematrix
+    places:
+      API_KEY: DUMMYAPIKEY
 
 amazon:
   aws:
     dynamodb:
+      ENDPOINT: http://localhost:8000 # http://dynamodb-local:8000 #  if running ordika outside docker container
       REGION: ap-southeast-1
-      TABLE_NAME: orang3-dev-table
-      ACCESS_KEY_ID: AKIAUFIGDK4UOVXH7V56
-      SECRET_ACCESS_KEY: OWZ6OWvcMS7i58BF+PGD5ADoItSCAR7EbV042I9B
+      TABLE_NAME: DUMMYTABLE
+      ACCESS_KEY_ID: DUMMYACCESSKEYID
+      SECRET_ACCESS_KEY: DUMMYSECRETACCESSKEY

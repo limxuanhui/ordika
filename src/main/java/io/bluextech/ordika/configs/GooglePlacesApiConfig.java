@@ -14,8 +14,6 @@ public class GooglePlacesApiConfig {
 
     private String API_KEY;
 
-    public GooglePlacesApiConfig() {
-        System.out.println("Google places api config constructor called");
-    }
+    public GooglePlacesApiConfig() {}
 
 }

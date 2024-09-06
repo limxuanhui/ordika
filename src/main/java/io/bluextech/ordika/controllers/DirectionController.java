@@ -98,9 +98,7 @@ public class DirectionController {
 
     @PostMapping()
     public OrdikaDirections getDirections(@RequestBody List<Coordinates> coordinatesList) throws Exception {
-        System.out.println("--- Coordinates List ---");
-        System.out.println(coordinatesList);
-        // Check if place_id exists - if yes we use placeId list instead of coordinates
+        // TODO: Check if place_id exists - if yes we use placeId list instead of coordinates
 
         if (coordinatesList.size() < 2) {
             return null;
@@ -113,34 +111,16 @@ public class DirectionController {
         // Route nodes in sequence that leads to "shortest path" (shortest as in distance or time)
         List<Integer> order = getOrder(distanceMatrix);
         List<Coordinates> orderedRoute = getOrderedRoute(coordinatesList, order);
-        System.out.println("Order: " + order);
-        System.out.println("Ordered route: " + orderedRoute);
 
         // With "shortest path" sequence of route nodes, get direction instructions for each consecutive pair
         List<DirectionsResult> directionsResultList = new ArrayList<>();
         for (int i = 0; i < orderedRoute.size() - 1; i++) {
             DirectionsResult directionsResult = directionsService.getDirections(orderedRoute.get(i), orderedRoute.get(i+1));
             if (directionsResult != null) {
-                System.out.println(Arrays.toString(directionsResult.routes[0].legs));
-                for (DirectionsStep step : directionsResult.routes[0].legs[0].steps) {
-                    System.out.println();
-                    System.out.println("STEP");
-                    System.out.println(step);
-                    if (step.steps != null) {
-                        for (DirectionsStep substep : step.steps) {
-                            System.out.println("\t" + substep);
-                        }
-                    }
-
-//                List<LatLng> coords = step.polyline.decodePath();
-//                System.out.println(coords);
-                    System.out.println();
-                }
                 directionsResultList.add(directionsResult);
             }
         }
 
-        // Return OrdikaDirections
         return new OrdikaDirections(directionsResultList, order);
     }
 }

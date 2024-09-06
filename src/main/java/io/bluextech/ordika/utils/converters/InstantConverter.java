@@ -10,9 +10,7 @@ import java.time.Instant;
 
 public class InstantConverter implements AttributeConverter<Instant> {
 
-    public InstantConverter() {
-        System.out.println("InstantConverter constructor called");
-    }
+    public InstantConverter() {}
 
 
     @Override
