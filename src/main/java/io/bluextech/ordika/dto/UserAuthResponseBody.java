@@ -3,13 +3,14 @@ package io.bluextech.ordika.dto;
 
 import io.bluextech.ordika.models.User;
 
-public record UserAuthResponseBody(User user, String accessToken, String refreshToken) {
+public record UserAuthResponseBody(User user, String accessToken, String refreshToken, String googlePlacesApiKey) {
     public UserAuthResponseBody {
         if (user == null
                 || accessToken == null || accessToken.equals("")
-                || refreshToken == null || refreshToken.equals("")) {
+                || refreshToken == null || refreshToken.equals("")
+                || googlePlacesApiKey == null || googlePlacesApiKey.equals("")) {
             throw new IllegalArgumentException("Record arguments are invalid. User: " + user + " | accessToken: "
-                    + accessToken + " | refreshToken: " + refreshToken);
+                    + accessToken + " | refreshToken: " + refreshToken + " | googlePlacesApiKey: " + googlePlacesApiKey);
         }
     }
 }

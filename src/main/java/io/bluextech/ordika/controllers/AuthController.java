@@ -6,6 +6,7 @@ import io.bluextech.ordika.dto.UserAuthRequestBody;
 import io.bluextech.ordika.dto.UserAuthResponseBody;
 import io.bluextech.ordika.models.AuthUser;
 import io.bluextech.ordika.services.AuthService;
+import io.bluextech.ordika.services.SecretService;
 import io.bluextech.ordika.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,8 @@ public class AuthController {
     private AuthService authService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private SecretService secretService;
 
     @PostMapping("/signin")
     public ResponseEntity<UserAuthResponseBody> signIn(@RequestBody UserAuthRequestBody body) throws GeneralSecurityException, IOException {
@@ -34,7 +37,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        return ResponseEntity.ok(new UserAuthResponseBody(authUser.getUser(), authUser.getAccessToken(), authUser.getRefreshToken()));
+        return ResponseEntity.ok(
+                new UserAuthResponseBody(authUser.getUser(), authUser.getAccessToken(), authUser.getRefreshToken(), secretService.getGooglePlacesApiKey()));
     }
 
     @PostMapping("/refresh-tokens")
