@@ -170,7 +170,6 @@
 	</dependencies>
 
 	<build>
-		<finalName>ordika-${maven.build.timestamp}</finalName>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
@@ -179,7 +178,6 @@
 				</excludes>
 			</resource>
 		</resources>
-
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
