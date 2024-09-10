@@ -8,6 +8,8 @@ import io.bluextech.ordika.models.AuthUser;
 import io.bluextech.ordika.services.AuthService;
 import io.bluextech.ordika.services.SecretService;
 import io.bluextech.ordika.services.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,7 @@ import java.security.GeneralSecurityException;
 @RequestMapping("/auth")
 public class AuthController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
     @Autowired
     private AuthService authService;
     @Autowired
@@ -32,6 +35,7 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<UserAuthResponseBody> signIn(@RequestBody UserAuthRequestBody body) throws GeneralSecurityException, IOException {
+        LOGGER.info("Authenticating user...");
         AuthUser authUser = authService.authenticate(body.user(), body.idToken());
         if (authUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -43,6 +47,7 @@ public class AuthController {
 
     @PostMapping("/refresh-tokens")
     public ResponseEntity<?> refreshTokens(@RequestBody RefreshTokensRequestBody body) {
+        LOGGER.info("Refreshing tokens...");
         if (body.refreshToken() == null || body.userId() == null
                 || body.refreshToken().isEmpty() || body.userId().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Refresh token or user id is empty/null.");
