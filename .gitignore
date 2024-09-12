@@ -39,4 +39,4 @@ build/
 src/main/resources/db/docker
 
 ### env properties files ###
-env-*.properties
+.env-*.properties
