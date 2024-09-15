@@ -3,6 +3,8 @@ package io.bluextech.ordika.repositories;
 import io.bluextech.ordika.dto.UpdateTaleRequestBody;
 import io.bluextech.ordika.models.*;
 import io.bluextech.ordika.services.FeedService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
@@ -22,6 +24,7 @@ import java.util.Objects;
 @Repository
 public class TaleRepository {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaleRepository.class);
     @Autowired
     private DynamoDbEnhancedClient dynamoDbEnhancedClient;
     @Autowired
@@ -72,10 +75,10 @@ public class TaleRepository {
     }
 
     public List<Route> batchUpdateRoutes(List<Route> routes) {
-        System.out.println("Batch updating routes");
+        LOGGER.info("Batch updating routes...");
         routes.forEach(route -> {
             Route updatedRoute = routeTable.updateItem(route);
-            System.out.println("Updated this route : " + updatedRoute);
+            LOGGER.trace("Updated route: " + updatedRoute.getId());
         });
 
         return routes;
@@ -119,10 +122,10 @@ public class TaleRepository {
     }
 
     public List<StoryItem> batchUpdateStoryItems(List<StoryItem> storyItems) {
-        System.out.println("Batch updating story items");
+        LOGGER.info("Batch updating story items...");
         storyItems.forEach(storyItem -> {
             StoryItem updatedStoryItem = storyItemTable.updateItem(storyItem);
-            System.out.println("Updated this story item : " + updatedStoryItem);
+            LOGGER.trace("Updated story item: " + updatedStoryItem.getId());
         });
 
         return storyItems;
@@ -143,7 +146,7 @@ public class TaleRepository {
                 .addWriteBatch(deleteBatch)
                 .build();
         BatchWriteResult batchDeleteResult = dynamoDbEnhancedClient.batchWriteItem(batchDeleteRequest);
-        System.out.println("Time taken to batch delete story items (ms): " + (System.currentTimeMillis() - start));
+        LOGGER.info("Time taken to batch delete story items (ms): " + (System.currentTimeMillis() - start));
         return batchDeleteResult;
     }
 
@@ -174,12 +177,8 @@ public class TaleRepository {
                 .limit(1)
                 .toList()
                 .get(0);
-        System.out.println("getting tale metadata...");
-//        taleMetadataPages.forEach(page -> {
-//            List<TaleMetadata> taleList = page.items();
-//            System.out.println(taleList);
-//        });
-        System.out.println("Time taken to get taleMetadataPage (ms): " + (System.currentTimeMillis() - start));
+
+        LOGGER.info("Time taken to get taleMetadataPage (ms): " + (System.currentTimeMillis() - start));
         return taleMetadataPage;
     }
 
@@ -205,9 +204,9 @@ public class TaleRepository {
     }
 
     public Tale getTaleByTaleId(String taleId) {
-        // Get tale metadata
+        LOGGER.info("Getting tale: " + taleId);
         TaleMetadata taleMetadata = getTaleMetadataByTaleId(taleId);
-        System.out.println("Got taleMetadata: " + taleMetadata);
+        LOGGER.trace("Got taleMetadata: " + taleMetadata);
 
         // Get itinerary metadata
         GetItemEnhancedRequest itineraryMetadataRequest = GetItemEnhancedRequest.builder()
@@ -217,7 +216,7 @@ public class TaleRepository {
                         .build())
                 .build();
         BaseMetadata itineraryMetadata = baseMetadataTable.getItem(itineraryMetadataRequest);
-        System.out.println("Got itineraryMetadata: " + itineraryMetadata);
+        LOGGER.trace("Got itineraryMetadata: " + itineraryMetadata);
 
         // Get routes
         QueryConditional routesConditional = QueryConditional.sortBeginsWith(
@@ -246,7 +245,7 @@ public class TaleRepository {
         );
         QueryEnhancedRequest storyItemsRequest = QueryEnhancedRequest.builder()
                 .queryConditional(storyItemsConditional)
-                .limit(5)
+                .limit(5) // TODO: is this necessary?
                 .scanIndexForward(true)
                 .build();
         List<StoryItem> storyItems = storyItemTable.query(storyItemsRequest)
@@ -255,9 +254,7 @@ public class TaleRepository {
                 .sorted()
                 .toList();
 
-        Tale tale = new Tale(taleMetadata, new Itinerary(itineraryMetadata, routes), storyItems);
-        System.out.println(tale);
-        return tale;
+        return new Tale(taleMetadata, new Itinerary(itineraryMetadata, routes), storyItems);
     }
 
     public TaleMetadata getTaleMetadataByTaleId(String taleId) {
@@ -267,6 +264,7 @@ public class TaleRepository {
                         .sortValue("#METADATA")
                         .build())
                 .build();
+
         return taleMetadataTable.getItem(taleMetadataRequest);
     }
 
@@ -334,6 +332,7 @@ public class TaleRepository {
     }
 
     public Tale saveTale(Tale tale) {
+        LOGGER.info("Saving tale: " + tale.getMetadata().getId());
         // Save user tale metadata
         TaleMetadata taleMetadata = tale.getMetadata();
         TaleMetadata userTaleMetadata = new TaleMetadata(
@@ -345,9 +344,8 @@ public class TaleRepository {
                 taleMetadata.getThumbnail(),
                 taleMetadata.getTitle()
         );
-        System.out.println("User tale metadata to save: ");
-        System.out.println(userTaleMetadata);
         taleMetadataTable.putItem(userTaleMetadata);
+        LOGGER.trace("----------- User tale metadata saved successfully -----------");
 
         // Save tale metadata
         taleMetadata.setPK("TALE#" + taleMetadata.getId());
@@ -355,7 +353,7 @@ public class TaleRepository {
         taleMetadata.setGSI1PK("METADATA_TALE");
         taleMetadata.setGSI1SK(taleMetadata.getPK());
         taleMetadataTable.putItem(taleMetadata);
-        System.out.println("----------- Tale metadata saved successfully -----------");
+        LOGGER.trace("----------- Tale metadata saved successfully -----------");
 
         // Save itinerary metadata
         BaseMetadata itineraryMetadata = tale.getItinerary().getMetadata();
@@ -363,7 +361,7 @@ public class TaleRepository {
             itineraryMetadata.setPK("TALE#" + taleMetadata.getId());
             itineraryMetadata.setSK("#METADATA_ITINERARY");
             baseMetadataTable.putItem(itineraryMetadata);
-            System.out.println("----------- Itinerary metadata saved successfully -----------");
+            LOGGER.trace("----------- Itinerary metadata saved successfully -----------");
         }
 
         // Save routes
@@ -383,8 +381,7 @@ public class TaleRepository {
                     .writeBatches(routesBatches)
                     .build();
             BatchWriteResult batchSaveRoutesResult = dynamoDbEnhancedClient.batchWriteItem(batchSaveRoutesRequest);
-            System.out.println("----------- Routes saved successfully -----------");
-            System.out.println(batchSaveRoutesResult.unprocessedDeleteItemsForTable(routeTable));
+            LOGGER.trace("----------- Routes saved successfully -----------");
         }
 
 
@@ -417,8 +414,11 @@ public class TaleRepository {
                     .writeBatches(storyItemsBatches)
                     .build();
             BatchWriteResult batchSaveStoryItemsResponse = dynamoDbEnhancedClient.batchWriteItem(batchSaveStoryItemsRequest);
-            System.out.println("----------- Story items saved successfully -----------");
-            System.out.println(batchSaveStoryItemsResponse.unprocessedDeleteItemsForTable(storyItemTable));
+            LOGGER.trace("----------- Story items saved successfully -----------");
+
+            // TODO: Check for unprocessed items in batch write request
+            // batchSaveStoryItemsResponse.unprocessedPutItemsForTable()
+            // batchSaveStoryItemsResponse.unprocessedDeleteItemsForTable(storyItemTable)
         }
 
         return tale;
@@ -478,11 +478,11 @@ public class TaleRepository {
 
             if (deletedCoverIds != null && !deletedCoverIds.isEmpty()) {
                 if (modifiedMetadata.getCover() == null) {
-                    // deleted old, no new
+                    // TODO: delete old cover media, no new
                     TaleMetadata updatedMetadata = updateTaleMetadata(modifiedMetadata, false);
                     TaleMetadata updatedUserTaleMetadata = updateTaleMetadata(userTaleMetadata, false);
                 } else {
-                    // deleted old, added new
+                    // TODO: delete old cover media, added new
                     modifiedMetadata.setGSI1PK(null);
                     modifiedMetadata.setGSI1SK(null);
                     modifiedMetadata.setId(null);
@@ -561,6 +561,8 @@ public class TaleRepository {
     }
 
     public String deleteTaleByTaleId(String taleId) {
+        LOGGER.info("Deleting tale by taleId: " + taleId);
+
         // Delete tale metadata
         DeleteItemEnhancedRequest deleteTaleMetadataRequest = DeleteItemEnhancedRequest.builder()
                 .key(Key.builder()
@@ -569,10 +571,6 @@ public class TaleRepository {
                         .build())
                 .build();
         DeleteItemEnhancedResponse<TaleMetadata> deleteTaleMetadataResponse = taleMetadataTable.deleteItemWithResponse(deleteTaleMetadataRequest);
-        System.out.println("Tale metadata DELETE response");
-        System.out.println("Attributes: " + deleteTaleMetadataResponse.attributes());
-        System.out.println("Consumed capacity: " + deleteTaleMetadataResponse.consumedCapacity());
-        System.out.println("Item collection metrics: " + deleteTaleMetadataResponse.itemCollectionMetrics());
 
         // Delete itinerary metadata
         DeleteItemEnhancedRequest deleteItineraryMetadataRequest = DeleteItemEnhancedRequest.builder()
@@ -582,10 +580,6 @@ public class TaleRepository {
                         .build())
                 .build();
         DeleteItemEnhancedResponse<BaseMetadata> itineraryMetadataResponse = baseMetadataTable.deleteItemWithResponse(deleteItineraryMetadataRequest);
-        System.out.println("Itinerary metadata DELETE response");
-        System.out.println("Attributes: " + itineraryMetadataResponse.attributes());
-        System.out.println("Consumed capacity: " + itineraryMetadataResponse.consumedCapacity());
-        System.out.println("Item collection metrics: " + itineraryMetadataResponse.itemCollectionMetrics());
 
         // Delete routes
         QueryConditional routesConditional = QueryConditional.sortBeginsWith(
@@ -612,8 +606,6 @@ public class TaleRepository {
                 .writeBatches(routesBatches)
                 .build();
         BatchWriteResult batchDeleteRoutesResponse = dynamoDbEnhancedClient.batchWriteItem(batchDeleteRoutesRequest);
-        System.out.println("Routes not yet DELETED");
-        System.out.println(batchDeleteRoutesResponse.unprocessedDeleteItemsForTable(routeTable));
 
         // Delete story items
         QueryConditional storyItemsConditional = QueryConditional.sortBeginsWith(
@@ -640,8 +632,6 @@ public class TaleRepository {
                 .writeBatches(storyItemsBatches)
                 .build();
         BatchWriteResult batchDeleteStoryItemsResponse = dynamoDbEnhancedClient.batchWriteItem(batchDeleteStoryItemsRequest);
-        System.out.println("Story items not yet DELETED");
-        System.out.println(batchDeleteStoryItemsResponse.unprocessedDeleteItemsForTable(storyItemTable));
 
         return taleId;
     }

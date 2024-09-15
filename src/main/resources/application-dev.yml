@@ -1,25 +1,37 @@
-spring:
-  cloud:
-    config:
-      uri: http://localhost:8888
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.security: INFO # TRACE
+
+ordika:
+  auth:
+    ACCESS_TOKEN_VALID_DURATION_MS: ${ACCESS_TOKEN_VALID_DURATION_MS} # 60min
+    REFRESH_TOKEN_VALID_DURATION_MS: ${REFRESH_TOKEN_VALID_DURATION_MS} # 24h
+    JWT_SECRET: ${JWT_SECRET} # random 256 bits string
 
 google:
+  client:
+    CLIENT_ID: ${google.client.CLIENT_ID}
   api:
     directions:
-      API_KEY: AIzaSyBd2XmXBRgtq2LGbo9HMEUgpfS2ZgXCfpk.
+      API_KEY: ${google.api.directions.API_KEY}
       UNITS: METRIC
-      MODE: TRANSIT #
-      TRANSIT_MODE: TRAIN # rail
+      MODE: TRANSIT
+      TRANSIT_MODE: TRAIN
       OUTPUT_FORMAT: json
       BASE_URL: https://maps.googleapis.com/maps/api/distancematrix
+    places:
+      API_KEY: ${google.api.places.API_KEY}
 
 amazon:
   aws:
-    s3:
-      ACCESS_KEY: AKIAUFIGDK4UKTWJT273
-      SECRET_KEY: bgGUzOKi1IaGAWTvI3oq9Nmq6EkJpDfnz4N+UcVC
     dynamodb:
-      ENDPOINT: http://localhost:8000
-      TABLE_NAME: sundaytable
-      ACCESS_KEY_ID: DUMMYACCESSKEYID
-      SECRET_ACCESS_KEY: DUMMYSECRETACCESSKEY
+      # http://localhost:8000 - if running ordika outside docker container, use localhost
+      # http://dynamodb-local:8000 - if running ordika inside docker container in same network as dynamodb-local, use dynamodb-local
+      ENDPOINT: ${amazon.aws.dynamodb.ENDPOINT}
+      REGION: ${amazon.aws.dynamodb.REGION}
+      TABLE_NAME: ${amazon.aws.dynamodb.TABLE_NAME}
+      ACCESS_KEY_ID: ${amazon.aws.dynamodb.ACCESS_KEY_ID}
+      SECRET_ACCESS_KEY: ${amazon.aws.dynamodb.SECRET_ACCESS_KEY}

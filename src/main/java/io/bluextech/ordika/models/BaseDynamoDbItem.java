@@ -13,13 +13,10 @@ public class BaseDynamoDbItem {
 
     private String PK;
     private String SK;
-//    private String GSI1PK;
-//    private String GSI1SK;
 
     public BaseDynamoDbItem() {}
 
     public BaseDynamoDbItem(String PK, String SK) {
-        System.out.println("Base dynamodb item called");
         this.PK = PK;
         this.SK = SK;
     }

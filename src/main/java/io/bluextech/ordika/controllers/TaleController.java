@@ -41,10 +41,8 @@ public class TaleController {
             }
         });
         List<Feed> feedList = feedService.getFeedsListByFeedIds(feedIds);
-        TaleViewBody c = new TaleViewBody(tale, feedList);
-        System.out.println("Get tale by tale id");
-        System.out.println(c);
-        return c;
+
+        return new TaleViewBody(tale, feedList);
     }
 
     @GetMapping("/metadata/user/{userId}")
@@ -59,10 +57,6 @@ public class TaleController {
 
     @PutMapping("/edit")
     public Tale updateTale(@RequestBody UpdateTaleRequestBody body) {
-        System.out.println("TALEID: " + body.taleId());
-        System.out.println("METADATA:" + body.metadata());
-        System.out.println("ROUTES: " + body.routes());
-        System.out.println("STORY ITEMS: " + body.storyItems());
         return taleService.updateTale(body);
     }
 

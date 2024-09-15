@@ -1,7 +1,7 @@
 package io.bluextech.ordika.models;
 /* Created by limxuanhui on 10/3/24 */
 
-import io.bluextech.ordika.utils.UserConverter;
+import io.bluextech.ordika.utils.converters.UserConverter;
 import lombok.Setter;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;

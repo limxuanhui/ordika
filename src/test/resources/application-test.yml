@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.security: INFO # TRACE
+
+ordika:
+  auth:
+    ACCESS_TOKEN_VALID_DURATION_MS: 3600000 # 60min
+    REFRESH_TOKEN_VALID_DURATION_MS: 86400000 # 24h
+    JWT_SECRET: DUMMYSECRETDUMMYSECRETDUMMYSECRETDUMMYSECRET # random 256 bits string
+
+google:
+  client:
+    CLIENT_ID: DUMMYCLIENTID
+  api:
+    directions:
+      API_KEY: DUMMYAPIKEY
+      UNITS: METRIC
+      MODE: TRANSIT
+      TRANSIT_MODE: TRAIN
+      OUTPUT_FORMAT: json
+      BASE_URL: https://maps.googleapis.com/maps/api/distancematrix
+    places:
+      API_KEY: DUMMYAPIKEY
+#
+amazon:
+  aws:
+    dynamodb:
+      ENDPOINT: http://localhost:8000
+      REGION: ap-southeast-1
+      TABLE_NAME: DUMMYTABLE
+      ACCESS_KEY_ID: DUMMYACCESSKEYID
+      SECRET_ACCESS_KEY: DUMMYSECRETACCESSKEY

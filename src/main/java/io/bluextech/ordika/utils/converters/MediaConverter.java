@@ -1,4 +1,4 @@
-package io.bluextech.ordika.utils;
+package io.bluextech.ordika.utils.converters;
 /* Created by limxuanhui on 10/3/24 */
 
 import io.bluextech.ordika.models.Media;
@@ -11,9 +11,7 @@ import java.util.Map;
 
 public class MediaConverter implements AttributeConverter<Media> {
 
-    public MediaConverter() {
-        System.out.println("MediaConverter constructor called");
-    }
+    public MediaConverter() {}
 
     @Override
     public AttributeValue transformFrom(Media media) {

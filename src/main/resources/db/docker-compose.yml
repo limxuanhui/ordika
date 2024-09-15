@@ -4,8 +4,16 @@ services:
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
     image: "amazon/dynamodb-local:latest"
     container_name: dynamodb-local
+#    hostname: dynamodb-local
     ports:
       - "8000:8000"
     volumes:
       - "./docker/dynamodb:/home/dynamodblocal/data"
     working_dir: /home/dynamodblocal
+
+#  ordika:
+#    command: 'docker run --name ordika --detach --rm --publish 8080:8080 --publish 50000:50000 -e "SPRING_PROFILES_ACTIVE=dev" limxuanhui/orang3:16'
+#    ports:
+#      - "8080:8080"
+#      - "50000:50000"
+#    container_name: "ordika-local"
