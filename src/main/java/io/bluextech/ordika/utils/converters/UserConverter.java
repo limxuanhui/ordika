@@ -24,19 +24,37 @@ public class UserConverter implements AttributeConverter<User> {
 
     @Override
     public AttributeValue transformFrom(User user) {
+        // Existing user
         if (user.getCreatedAt() != null) {
-            return AttributeValue.fromM(
-                    Map.of("PK", AttributeValue.fromS(user.getPK()),
-                            "SK", AttributeValue.fromS(user.getSK()),
-                            "id", AttributeValue.fromS(user.getId()),
-                            "name", AttributeValue.fromS(user.getName()),
-                            "handle", AttributeValue.fromS(user.getHandle()),
-                            "email", AttributeValue.fromS(user.getEmail()),
-                            "avatar", mediaConverter.transformFrom(user.getAvatar()),
-                            "createdAt", instantConverter.transformFrom(user.getCreatedAt()),
-                            "isDeactivated", AttributeValue.fromBool(user.getIsDeactivated())
-                    )
+            Map<String, AttributeValue> userMap = Map.ofEntries(
+                    Map.entry("PK", AttributeValue.fromS(user.getPK())),
+                    Map.entry("SK", AttributeValue.fromS(user.getSK())),
+                    Map.entry("id", AttributeValue.fromS(user.getId())),
+                    Map.entry("name", AttributeValue.fromS(user.getName())),
+                    Map.entry("handle", AttributeValue.fromS(user.getHandle())),
+                    Map.entry("email", AttributeValue.fromS(user.getEmail())),
+                    Map.entry("bio", AttributeValue.fromS(user.getBio())),
+                    Map.entry("avatar", mediaConverter.transformFrom(user.getAvatar())),
+                    Map.entry("createdAt", instantConverter.transformFrom(user.getCreatedAt())),
+                    Map.entry("lastUpdatedNameAt",
+                            user.getLastUpdatedNameAt() != null
+                                    ? instantConverter.transformFrom(user.getLastUpdatedNameAt())
+                                    : AttributeValue.fromNul(true)),
+                    Map.entry("lastUpdatedHandleAt",
+                            user.getLastUpdatedHandleAt() != null
+                                    ? instantConverter.transformFrom(user.getLastUpdatedHandleAt())
+                                    : AttributeValue.fromNul(true)),
+                    Map.entry("lastUpdatedBioAt",
+                            user.getLastUpdatedBioAt() != null
+                                    ? instantConverter.transformFrom(user.getLastUpdatedBioAt())
+                                    : AttributeValue.fromNul(true)),
+                    Map.entry("lastUpdatedAvatarAt",
+                            user.getLastUpdatedBioAt() != null
+                                    ? instantConverter.transformFrom(user.getLastUpdatedAvatarAt())
+                                    : AttributeValue.fromNul(true)),
+                    Map.entry("isDeactivated", AttributeValue.fromBool(user.getIsDeactivated()))
             );
+            return AttributeValue.fromM(userMap);
         } else {
             return AttributeValue.fromM(
                     Map.of("PK", AttributeValue.fromS(user.getPK()),
@@ -60,8 +78,17 @@ public class UserConverter implements AttributeConverter<User> {
                 map.get("name").s(),
                 map.get("handle").s(),
                 map.get("email").s(),
+                map.containsKey("bio") ? map.get("bio").s() : "",
                 mediaConverter.transformTo(map.get("avatar")),
                 instantConverter.transformTo(map.get("createdAt")),
+                map.containsKey("lastUpdatedNameAt") && map.get("lastUpdatedNameAt").s() != null
+                        ? instantConverter.transformTo(map.get("lastUpdatedNameAt")) : null,
+                map.containsKey("lastUpdatedHandleAt") && map.get("lastUpdatedHandleAt").s() != null
+                        ? instantConverter.transformTo(map.get("lastUpdatedHandleAt")) : null,
+                map.containsKey("lastUpdatedBioAt") && map.get("lastUpdatedBioAt").s() != null
+                        ? instantConverter.transformTo(map.get("lastUpdatedBioAt")) : null,
+                map.containsKey("lastUpdatedAvatarAt") && map.get("lastUpdatedAvatarAt").s() != null
+                        ? instantConverter.transformTo(map.get("lastUpdatedAvatarAt")) : null,
                 map.get("isDeactivated").bool()
         );
     }
