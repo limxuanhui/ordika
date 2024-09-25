@@ -4,9 +4,9 @@ import io.bluextech.ordika.dto.UpdateTaleRequestBody;
 import io.bluextech.ordika.models.*;
 import io.bluextech.ordika.services.FeedService;
 import io.bluextech.ordika.services.UserService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -20,24 +20,18 @@ import software.amazon.awssdk.utils.ImmutableMap;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Repository
 public class TaleRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaleRepository.class);
-    @Autowired
-    private DynamoDbEnhancedClient dynamoDbEnhancedClient;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private FeedService feedService;
-    @Autowired
-    private DynamoDbTable<TaleMetadata> taleMetadataTable;
-    @Autowired
-    private DynamoDbTable<BaseMetadata> baseMetadataTable;
-    @Autowired
-    private DynamoDbTable<Route> routeTable;
-    @Autowired
-    private DynamoDbTable<StoryItem> storyItemTable;
+    private final DynamoDbEnhancedClient dynamoDbEnhancedClient;
+    private final UserService userService;
+    private final FeedService feedService;
+    private final DynamoDbTable<TaleMetadata> taleMetadataTable;
+    private final DynamoDbTable<BaseMetadata> baseMetadataTable;
+    private final DynamoDbTable<Route> routeTable;
+    private final DynamoDbTable<StoryItem> storyItemTable;
 
     public List<TaleMetadata> batchUpdateTaleMetadata(List<TaleMetadata> taleMetadataList) {
         List<TaleMetadata> updatedTaleMetadataList = new ArrayList<>();

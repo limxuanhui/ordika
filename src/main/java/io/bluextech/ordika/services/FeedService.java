@@ -9,9 +9,9 @@ import io.bluextech.ordika.models.FeedMetadata;
 import io.bluextech.ordika.models.PagedResult;
 import io.bluextech.ordika.repositories.FeedRepository;
 import io.bluextech.ordika.utils.converters.DynamoDbAttributeValueConverter;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -19,12 +19,12 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import java.util.List;
 import java.util.Map;
 
+@RequiredArgsConstructor
 @Service
 public class FeedService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeedService.class);
-    @Autowired
-    private FeedRepository feedRepository;
+    private final FeedRepository feedRepository;
 
     public Feed getFeedById(String feedId) {
         return feedRepository.getFeedByFeedId(feedId);

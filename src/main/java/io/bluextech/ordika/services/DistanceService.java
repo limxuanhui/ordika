@@ -10,20 +10,18 @@ import com.google.maps.model.TravelMode;
 import com.google.maps.model.Unit;
 import io.bluextech.ordika.configs.GoogleDirectionsApiConfig;
 import io.bluextech.ordika.models.Coordinates;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class DistanceService {
 
-    // Set up GeoApiContext, refactor it to be singleton
-    @Autowired
-    private GeoApiContext geoApiContext;
-    @Autowired
-    private GoogleDirectionsApiConfig googleDirectionsApiConfig;
+    private final GeoApiContext geoApiContext;
+    private final GoogleDirectionsApiConfig googleDirectionsApiConfig;
 
     public DistanceMatrix getDistanceMatrix(List<Coordinates> coordinatesList) {
         List<LatLng> origins = coordinatesList.stream()

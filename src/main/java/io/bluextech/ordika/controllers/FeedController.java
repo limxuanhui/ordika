@@ -7,17 +7,17 @@ import io.bluextech.ordika.models.Feed;
 import io.bluextech.ordika.models.FeedMetadata;
 import io.bluextech.ordika.models.PagedResult;
 import io.bluextech.ordika.services.FeedService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/feeds")
 public class FeedController {
 
-    @Autowired
-    private FeedService feedService;
+    private final FeedService feedService;
 
     @GetMapping
     public PagedResult<Feed> getNextFeedsPage(@RequestParam(required = false) String base64Key) throws JsonProcessingException {

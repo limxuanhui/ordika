@@ -5,24 +5,21 @@ import io.bluextech.ordika.dto.UpdateUserProfileRequestBody;
 import io.bluextech.ordika.models.User;
 import io.bluextech.ordika.models.UserDeletionInfo;
 import io.bluextech.ordika.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/{userId}")
     public User getUserByUserId(@PathVariable String userId) {
-
-        User u = userService.getUserByUserId(userId);
-        System.out.println(u);
-        return u;
+        return userService.getUserByUserId(userId);
     }
 
     @PutMapping("/update-profile")

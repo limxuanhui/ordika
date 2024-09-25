@@ -10,21 +10,19 @@ import io.bluextech.ordika.models.Tale;
 import io.bluextech.ordika.models.TaleMetadata;
 import io.bluextech.ordika.services.FeedService;
 import io.bluextech.ordika.services.TaleService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/tales")
 public class TaleController {
 
-    @Autowired
-    private TaleService taleService;
-
-    @Autowired
-    private FeedService feedService;
+    private final TaleService taleService;
+    private final FeedService feedService;
 
     @GetMapping("/metadata")
     public PagedResult<TaleMetadata> getNextTalesMetadataPage(@RequestParam(required = false) String base64Key) throws JsonProcessingException {

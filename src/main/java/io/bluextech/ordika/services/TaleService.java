@@ -9,7 +9,7 @@ import io.bluextech.ordika.models.Tale;
 import io.bluextech.ordika.models.TaleMetadata;
 import io.bluextech.ordika.repositories.TaleRepository;
 import io.bluextech.ordika.utils.converters.DynamoDbAttributeValueConverter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -17,11 +17,11 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import java.util.List;
 import java.util.Map;
 
+@RequiredArgsConstructor
 @Service
 public class TaleService {
 
-    @Autowired
-    private TaleRepository taleRepository;
+    private final TaleRepository taleRepository;
 
     public Tale getTaleByTaleId(String taleId) {
         return taleRepository.getTaleByTaleId(taleId);

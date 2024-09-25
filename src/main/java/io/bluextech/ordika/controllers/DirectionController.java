@@ -1,12 +1,14 @@
 package io.bluextech.ordika.controllers;
 /* Created by limxuanhui on 10/9/22 */
 
-import com.google.maps.model.*;
+import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.DistanceMatrix;
+import com.google.maps.model.DistanceMatrixRow;
 import io.bluextech.ordika.models.Coordinates;
 import io.bluextech.ordika.models.OrdikaDirections;
 import io.bluextech.ordika.services.DirectionService;
 import io.bluextech.ordika.services.DistanceService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,14 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/directions")
 public class DirectionController {
 
-    @Autowired
-    private DirectionService directionsService;
-    @Autowired
-    private DistanceService distanceService;
+    private final DirectionService directionsService;
+    private final DistanceService distanceService;
 
     private List<Integer> getUnvisited(Map<Integer, Boolean> visited) {
         return visited.entrySet()
