@@ -86,7 +86,7 @@ public class FeedService {
         List<FeedMetadata> allUserFeedsMetadata = getAllUserFeedsMetadataByUserId(userId);
         allFeedsMetadata.addAll(allUserFeedsMetadata);
         allFeedsMetadata.forEach(feedMetadata -> {
-            feedMetadata.getCreator().setIsDeactivated(false);
+//            feedMetadata.getCreator().setIsDeactivated(false);
             feedMetadata.setId(null);
             feedMetadata.setThumbnail(null);
             feedMetadata.setTaleId(null);
@@ -102,7 +102,7 @@ public class FeedService {
         List<FeedMetadata> allUserFeedsMetadata = getAllUserFeedsMetadataByUserId(userId);
         allFeedsMetadata.addAll(allUserFeedsMetadata);
         allFeedsMetadata.forEach(feedMetadata -> {
-            feedMetadata.getCreator().setIsDeactivated(true);
+//            feedMetadata.getCreator().setIsDeactivated(true);
             feedMetadata.setId(null);
             feedMetadata.setThumbnail(null);
             feedMetadata.setTaleId(null);
@@ -126,10 +126,10 @@ public class FeedService {
             feedMetadata.setGSI1SK("FEED#" + feedMetadata.getId());
 
             FeedMetadata userFeedMetadata = new FeedMetadata(
-                    feedMetadata.getCreator().getPK(),
+                    "USER#" + feedMetadata.getCreatorId(),
                     "#METADATA_FEED#FEED#" + feedMetadata.getId(),
                     feedMetadata.getId(),
-                    feedMetadata.getCreator(),
+                    feedMetadata.getCreatorId(),
                     feedMetadata.getThumbnail(),
                     feedMetadata.getTaleId());
 

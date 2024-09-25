@@ -3,18 +3,19 @@ package io.bluextech.ordika.repositories;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.bluextech.ordika.models.*;
-import io.bluextech.ordika.services.TaleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
-import software.amazon.awssdk.enhanced.dynamodb.model.TransactWriteItemsEnhancedRequest;
-import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public class UserRepository {
@@ -23,15 +24,13 @@ public class UserRepository {
     @Autowired
     private DynamoDbTable<User> userTable;
     @Autowired
-    private DynamoDbTable<BaseMetadata> baseMetadataTable;
-    @Autowired
     private DynamoDbTable<FeedMetadata> feedMetadataTable;
-    @Autowired
-    private DynamoDbTable<TaleMetadata> taleMetadataTable;
     @Autowired
     private DynamoDbTable<UserDeletionInfo> userDeletionInfoTable;
     @Autowired
-    private TaleService taleService;
+    private DynamoDbClient dynamoDbClient;
+    @Autowired
+    private DynamoDbEnhancedClient dynamoDbEnhancedClient;
 
     public User getUserMetadataByUserId(String userId) {
         LOGGER.info("Finding user with userId: " + userId);
@@ -40,6 +39,27 @@ public class UserRepository {
                 .sortValue(User.SK_PREFIX)
                 .build()
         );
+    }
+
+    public List<User> batchGetUsersByUserIds(Set<String> userIds) {
+        List<ReadBatch> readBatches = userIds.stream()
+                .map(userId -> ReadBatch.builder(User.class)
+                        .mappedTableResource(userTable)
+                        .addGetItem(Key.builder()
+                                .partitionValue(User.PK_PREFIX + userId)
+                                .sortValue(User.SK_PREFIX)
+                                .build())
+                        .build())
+                .toList();
+        BatchGetItemEnhancedRequest request = BatchGetItemEnhancedRequest.builder()
+                .readBatches(readBatches)
+                .build();
+
+        BatchGetResultPageIterable result = dynamoDbEnhancedClient.batchGetItem(request);
+        List<User> users = result.resultsForTable(userTable).stream().toList();
+        LOGGER.info("Batch got users");
+        System.out.println(users);
+        return users;
     }
 
     public User createUser(User user) {

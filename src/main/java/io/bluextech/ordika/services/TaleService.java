@@ -67,14 +67,14 @@ public class TaleService {
         List<BaseMetadata> allItineraryMetadata = getAllItineraryMetadataByTaleIdList(allTalesMetadata.stream()
                 .map(BaseMetadata::getId)
                 .toList());
-        allItineraryMetadata.forEach(itineraryMetadata -> {
-            itineraryMetadata.getCreator().setIsDeactivated(false);
-            itineraryMetadata.setId(null);
-        });
+//        allItineraryMetadata.forEach(itineraryMetadata -> {
+//            itineraryMetadata.getCreatorId().setIsDeactivated(false);
+//            itineraryMetadata.setId(null);
+//        });
         taleRepository.batchUpdateItineraryMetadata(allItineraryMetadata);
         allTalesMetadata.addAll(allUserTalesMetadata);
         allTalesMetadata.forEach(taleMetadata -> {
-            taleMetadata.getCreator().setIsDeactivated(false);
+//            taleMetadata.getCreator().setIsDeactivated(false);
             taleMetadata.setId(null);
             taleMetadata.setCover(null);
             taleMetadata.setThumbnail(null);
@@ -92,14 +92,14 @@ public class TaleService {
         List<BaseMetadata> allItineraryMetadata = getAllItineraryMetadataByTaleIdList(allTalesMetadata.stream()
                 .map(BaseMetadata::getId)
                 .toList());
-        allItineraryMetadata.forEach(itineraryMetadata -> {
-            itineraryMetadata.getCreator().setIsDeactivated(true);
-            itineraryMetadata.setId(null);
-        });
+//        allItineraryMetadata.forEach(itineraryMetadata -> {
+//            itineraryMetadata.getCreator().setIsDeactivated(true);
+//            itineraryMetadata.setId(null);
+//        });
         taleRepository.batchUpdateItineraryMetadata(allItineraryMetadata);
         allTalesMetadata.addAll(allUserTalesMetadata);
         allTalesMetadata.forEach(taleMetadata -> {
-            taleMetadata.getCreator().setIsDeactivated(true);
+//            taleMetadata.getCreator().setIsDeactivated(true);
             taleMetadata.setId(null);
             taleMetadata.setCover(null);
             taleMetadata.setThumbnail(null);

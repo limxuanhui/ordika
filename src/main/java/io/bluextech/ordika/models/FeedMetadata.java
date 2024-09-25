@@ -16,28 +16,28 @@ public class FeedMetadata extends BaseMetadata {
 
     public FeedMetadata() {}
 
-    public FeedMetadata(String PK, String SK, String id, User creator, Media thumbnail, String taleId) {
-        super(PK, SK, id, creator);
+    public FeedMetadata(String PK, String SK, String id, String creatorId, Media thumbnail, String taleId) {
+        super(PK, SK, id, creatorId);
         this.thumbnail = thumbnail;
         this.taleId = taleId;
     }
 
-    public FeedMetadata(String PK, String SK, String id, User creator, Media thumbnail, String taleId, String GSI1PK, String GSI1SK) {
-        super(PK, SK, id, creator);
+    public FeedMetadata(String PK, String SK, String id, String creatorId, Media thumbnail, String taleId, String GSI1PK, String GSI1SK) {
+        super(PK, SK, id, creatorId);
         this.thumbnail = thumbnail;
         this.taleId = taleId;
         this.GSI1PK = GSI1PK;
         this.GSI1SK = GSI1SK;
     }
 
-    public FeedMetadata(String id, User creator, Media thumbnail, String taleId) {
-        super(Feed.USER_PK_PREFIX + creator.getId(), Feed.USER_SK_PREFIX + id, id, creator);
+    public FeedMetadata(String id, String creatorId, Media thumbnail, String taleId) {
+        super(Feed.USER_PK_PREFIX + creatorId, Feed.USER_SK_PREFIX + id, id, creatorId);
         this.thumbnail = thumbnail;
         this.taleId = taleId;
     }
 
-    public FeedMetadata(String id, User creator, Media thumbnail, String taleId, String GSI1PK, String GSI1SK) {
-        super(Feed.PK_PREFIX + id, Feed.SK_PREFIX, id, creator);
+    public FeedMetadata(String id, String creatorId, Media thumbnail, String taleId, String GSI1PK, String GSI1SK) {
+        super(Feed.PK_PREFIX + id, Feed.SK_PREFIX, id, creatorId);
         this.thumbnail = thumbnail;
         this.taleId = taleId;
         this.GSI1PK = GSI1PK;
@@ -73,7 +73,7 @@ public class FeedMetadata extends BaseMetadata {
                 "PK='" + this.getPK() + '\'' +
                 ", SK='" + this.getSK() + '\'' +
                 ", id'" + this.getId() + '\'' +
-                ", creator='" + this.getCreator() + '\'' +
+                ", creatorId='" + this.getCreatorId() + '\'' +
                 ", thumbnail=" + thumbnail +
                 ", taleId='" + taleId + '\'' +
                 ", GSI1PK='" + GSI1PK + '\'' +

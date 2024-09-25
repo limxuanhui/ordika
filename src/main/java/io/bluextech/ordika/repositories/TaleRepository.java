@@ -3,6 +3,7 @@ package io.bluextech.ordika.repositories;
 import io.bluextech.ordika.dto.UpdateTaleRequestBody;
 import io.bluextech.ordika.models.*;
 import io.bluextech.ordika.services.FeedService;
+import io.bluextech.ordika.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +17,8 @@ import software.amazon.awssdk.enhanced.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.utils.ImmutableMap;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class TaleRepository {
@@ -27,6 +26,8 @@ public class TaleRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaleRepository.class);
     @Autowired
     private DynamoDbEnhancedClient dynamoDbEnhancedClient;
+    @Autowired
+    private UserService userService;
     @Autowired
     private FeedService feedService;
     @Autowired
@@ -51,7 +52,7 @@ public class TaleRepository {
     public List<BaseMetadata> batchUpdateItineraryMetadata(List<BaseMetadata> itineraryMetadataList) {
         List<BaseMetadata> updatedItineraryMetadataList = new ArrayList<>();
         itineraryMetadataList.forEach(itineraryMetadata -> {
-            BaseMetadata updatedItineraryMetadata = updateItineraryMetadata(itineraryMetadata);
+            BaseMetadata updatedItineraryMetadata = updateBaseMetadata(itineraryMetadata);
             updatedItineraryMetadataList.add(updatedItineraryMetadata);
         });
 
@@ -59,8 +60,7 @@ public class TaleRepository {
     }
 
     public BatchWriteResult batchSaveRoutes(List<Route> routes) {
-        List<WriteBatch> saveBatches = routes
-                .stream()
+        List<WriteBatch> saveBatches = routes.stream()
                 .map(item -> WriteBatch.builder(Route.class)
                         .mappedTableResource(routeTable)
                         .addPutItem(item)
@@ -153,22 +153,20 @@ public class TaleRepository {
     public Page<TaleMetadata> getNextTalesMetadataPage(Map<String, AttributeValue> exclusiveStartKey) {
         // Check if there are anymore metadata pages to fetch,
         // if not log "No more new tales metadata"
-        QueryConditional conditional = QueryConditional.sortBeginsWith(
-                Key.builder()
-                        .partitionValue(Tale.GSI1PK_PREFIX)
-                        .sortValue(Tale.GSI1SK_PREFIX)
-                        .build()
-        );
+        QueryConditional conditional = QueryConditional.sortBeginsWith(Key.builder()
+                .partitionValue(Tale.GSI1PK_PREFIX)
+                .sortValue(Tale.GSI1SK_PREFIX)
+                .build());
         QueryEnhancedRequest request = QueryEnhancedRequest.builder()
                 .queryConditional(conditional)
                 .limit(10)
                 .scanIndexForward(false)
                 .consistentRead(false)
                 .exclusiveStartKey(exclusiveStartKey)
-                .filterExpression(Expression.builder()
-                        .expression("creator.isDeactivated=:isDeactivated")
-                        .expressionValues(Map.of(":isDeactivated", AttributeValue.fromBool(false)))
-                        .build())
+//                .filterExpression(Expression.builder()
+//                        .expression("creator.isDeactivated=:isDeactivated")
+//                        .expressionValues(Map.of(":isDeactivated", AttributeValue.fromBool(false)))
+//                        .build())
                 .build();
         long start = System.currentTimeMillis();
         Page<TaleMetadata> taleMetadataPage = taleMetadataTable.index("GSI1")
@@ -177,18 +175,32 @@ public class TaleRepository {
                 .limit(1)
                 .toList()
                 .get(0);
+        Set<String> uniqueCreatorIds = taleMetadataPage.items()
+                .stream()
+                .map(TaleMetadata::getCreatorId)
+                .collect(Collectors.toSet());
+
+        // Filter out tales of deactivated user
+        List<User> uniqueUsers = userService.getUsersByUserIds(uniqueCreatorIds);
+        List<TaleMetadata> filteredTaleMetadata = taleMetadataPage.items()
+                .stream()
+                .filter(taleMetadata -> {
+                    Optional<User> user = uniqueUsers.stream()
+                            .filter(u -> Objects.equals(u.getId(), taleMetadata.getCreatorId()))
+                            .findFirst();
+                    return user.isPresent() && !user.get().getIsDeactivated();
+                })
+                .toList();
 
         LOGGER.info("Time taken to get taleMetadataPage (ms): " + (System.currentTimeMillis() - start));
-        return taleMetadataPage;
+        return Page.create(filteredTaleMetadata, taleMetadataPage.lastEvaluatedKey());
     }
 
     public Page<TaleMetadata> getNextTalesMetadataPageByUserId(String userId) {
-        QueryConditional conditional = QueryConditional.sortBeginsWith(
-                Key.builder()
-                        .partitionValue("USER#" + userId)
-                        .sortValue("#METADATA_TALE#")
-                        .build()
-        );
+        QueryConditional conditional = QueryConditional.sortBeginsWith(Key.builder()
+                .partitionValue(Tale.USER_PK_PREFIX + userId)
+                .sortValue(Tale.USER_SK_PREFIX)
+                .build());
         QueryEnhancedRequest request = QueryEnhancedRequest.builder()
                 .queryConditional(conditional)
                 .limit(10)
@@ -211,8 +223,8 @@ public class TaleRepository {
         // Get itinerary metadata
         GetItemEnhancedRequest itineraryMetadataRequest = GetItemEnhancedRequest.builder()
                 .key(Key.builder()
-                        .partitionValue("TALE#" + taleId)
-                        .sortValue("#METADATA_ITINERARY")
+                        .partitionValue(Tale.PK_PREFIX + taleId)
+                        .sortValue(Tale.SK_PREFIX_ITINERARY)
                         .build())
                 .build();
         BaseMetadata itineraryMetadata = baseMetadataTable.getItem(itineraryMetadataRequest);
@@ -221,8 +233,8 @@ public class TaleRepository {
         // Get routes
         QueryConditional routesConditional = QueryConditional.sortBeginsWith(
                 Key.builder()
-                        .partitionValue("TALE#" + taleId)
-                        .sortValue("ITINERARY#ROUTE#")
+                        .partitionValue(Tale.PK_PREFIX + taleId)
+                        .sortValue(Tale.SK_PREFIX_ROUTE)
                         .build()
         );
         QueryEnhancedRequest routesRequest = QueryEnhancedRequest.builder()
@@ -239,8 +251,8 @@ public class TaleRepository {
         // Get story items
         QueryConditional storyItemsConditional = QueryConditional.sortBeginsWith(
                 Key.builder()
-                        .partitionValue("TALE#" + taleId)
-                        .sortValue("STORY#")
+                        .partitionValue(Tale.PK_PREFIX + taleId)
+                        .sortValue(Tale.SK_PREFIX_STORYITEM)
                         .build()
         );
         QueryEnhancedRequest storyItemsRequest = QueryEnhancedRequest.builder()
@@ -260,8 +272,8 @@ public class TaleRepository {
     public TaleMetadata getTaleMetadataByTaleId(String taleId) {
         GetItemEnhancedRequest taleMetadataRequest = GetItemEnhancedRequest.builder()
                 .key(Key.builder()
-                        .partitionValue("TALE#" + taleId)
-                        .sortValue("#METADATA")
+                        .partitionValue(Tale.PK_PREFIX + taleId)
+                        .sortValue(Tale.SK_PREFIX)
                         .build())
                 .build();
 
@@ -271,8 +283,8 @@ public class TaleRepository {
     public TaleMetadata getUserTaleMetadataByTaleId(String userId, String taleId) {
         GetItemEnhancedRequest taleMetadataRequest = GetItemEnhancedRequest.builder()
                 .key(Key.builder()
-                        .partitionValue("USER#" + userId)
-                        .sortValue("#METADATA_TALE#TALE#" + taleId)
+                        .partitionValue(Tale.USER_PK_PREFIX)
+                        .sortValue(Tale.USER_SK_PREFIX + taleId)
                         .build())
                 .build();
         return taleMetadataTable.getItem(taleMetadataRequest);
@@ -288,7 +300,6 @@ public class TaleRepository {
                 .queryConditional(conditional)
                 .filterExpression(Expression.builder()
                         .expression("creator.id=:userId")
-//                        .expressionNames(ImmutableMap.of("#creatorId", "creator.id")) // not working
                         .expressionValues(ImmutableMap.of(":userId", AttributeValue.fromS(userId)))
                         .build())
                 .consistentRead(false) // TODO: should be true since we want to get every tale metadata?
@@ -323,7 +334,7 @@ public class TaleRepository {
         taleIds.forEach(taleId -> {
             BaseMetadata itineraryMetadata = baseMetadataTable.getItem(Key.builder()
                             .partitionValue(Tale.PK_PREFIX + taleId)
-                            .sortValue(Tale.ITINERARY_SK_PREFIX)
+                            .sortValue(Tale.SK_PREFIX_ITINERARY)
                     .build());
             allItineraryMetadataList.add(itineraryMetadata);
         });
@@ -336,10 +347,10 @@ public class TaleRepository {
         // Save user tale metadata
         TaleMetadata taleMetadata = tale.getMetadata();
         TaleMetadata userTaleMetadata = new TaleMetadata(
-                "USER#" + taleMetadata.getCreator().getId(),
-                "#METADATA_TALE#TALE#" + taleMetadata.getId(),
+                Tale.USER_PK_PREFIX + taleMetadata.getCreatorId(),
+                Tale.USER_SK_PREFIX + taleMetadata.getId(),
                 taleMetadata.getId(),
-                taleMetadata.getCreator(),
+                taleMetadata.getCreatorId(),
                 taleMetadata.getCover(),
                 taleMetadata.getThumbnail(),
                 taleMetadata.getTitle()
@@ -348,9 +359,9 @@ public class TaleRepository {
         LOGGER.trace("----------- User tale metadata saved successfully -----------");
 
         // Save tale metadata
-        taleMetadata.setPK("TALE#" + taleMetadata.getId());
-        taleMetadata.setSK("#METADATA");
-        taleMetadata.setGSI1PK("METADATA_TALE");
+        taleMetadata.setPK(Tale.PK_PREFIX + taleMetadata.getId());
+        taleMetadata.setSK(Tale.SK_PREFIX);
+        taleMetadata.setGSI1PK(Tale.GSI1PK_PREFIX);
         taleMetadata.setGSI1SK(taleMetadata.getPK());
         taleMetadataTable.putItem(taleMetadata);
         LOGGER.trace("----------- Tale metadata saved successfully -----------");
@@ -358,8 +369,8 @@ public class TaleRepository {
         // Save itinerary metadata
         BaseMetadata itineraryMetadata = tale.getItinerary().getMetadata();
         if (itineraryMetadata != null) {
-            itineraryMetadata.setPK("TALE#" + taleMetadata.getId());
-            itineraryMetadata.setSK("#METADATA_ITINERARY");
+            itineraryMetadata.setPK(Tale.PK_PREFIX + taleMetadata.getId());
+            itineraryMetadata.setSK(Tale.SK_PREFIX_ITINERARY);
             baseMetadataTable.putItem(itineraryMetadata);
             LOGGER.trace("----------- Itinerary metadata saved successfully -----------");
         }
@@ -369,7 +380,7 @@ public class TaleRepository {
         if (routes != null && !routes.isEmpty()) {
             routes.forEach(route -> {
                 route.setPK(taleMetadata.getPK());
-                route.setSK("ITINERARY#ROUTE#" + route.getId());
+                route.setSK(Tale.SK_PREFIX_ROUTE + route.getId());
             });
             List<WriteBatch> routesBatches = routes.stream()
                     .map(item -> WriteBatch.builder(Route.class)
@@ -390,7 +401,7 @@ public class TaleRepository {
         if (storyItems != null && !storyItems.isEmpty()) {
             storyItems.forEach(storyItem -> {
                 storyItem.setPK(taleMetadata.getPK());
-                storyItem.setSK("STORY#STORY_ITEM#" + storyItem.getId());
+                storyItem.setSK(Tale.SK_PREFIX_STORYITEM + storyItem.getId());
             });
             List<String> linkedFeedIds = storyItems.stream()
                     .filter(storyItem -> storyItem.getType() == 1)
@@ -441,9 +452,9 @@ public class TaleRepository {
         return taleMetadataTable.updateItem(request);
     }
 
-    private BaseMetadata updateItineraryMetadata(BaseMetadata itineraryMetadata) {
+    private BaseMetadata updateBaseMetadata(BaseMetadata metadata) {
         UpdateItemEnhancedRequest<BaseMetadata> request = UpdateItemEnhancedRequest.builder(BaseMetadata.class)
-                .item(itineraryMetadata)
+                .item(metadata)
                 .ignoreNulls(true)
                 .build();
         return baseMetadataTable.updateItem(request);
@@ -461,11 +472,11 @@ public class TaleRepository {
         // Update metadata
         if (modifiedMetadataList != null && !modifiedMetadataList.isEmpty()) {
             TaleMetadata modifiedMetadata = modifiedMetadataList.get(0);
-            TaleMetadata userTaleMetadata = getUserTaleMetadataByTaleId(modifiedMetadata.getCreator().getId(), taleId);
-            modifiedMetadata.setPK("TALE#" + modifiedMetadata.getId());
-            modifiedMetadata.setSK("#METADATA");
-            modifiedMetadata.setGSI1PK("METADATA_TALE");
-            modifiedMetadata.setGSI1SK("TALE#" + modifiedMetadata.getId());
+            TaleMetadata userTaleMetadata = getUserTaleMetadataByTaleId(modifiedMetadata.getCreatorId(), taleId);
+            modifiedMetadata.setPK(Tale.PK_PREFIX + modifiedMetadata.getId());
+            modifiedMetadata.setSK(Tale.SK_PREFIX);
+            modifiedMetadata.setGSI1PK(Tale.GSI1PK_PREFIX);
+            modifiedMetadata.setGSI1SK(Tale.GSI1SK_PREFIX + modifiedMetadata.getId());
             userTaleMetadata.setCover(modifiedMetadata.getCover());
             userTaleMetadata.setThumbnail(modifiedMetadata.getThumbnail());
             userTaleMetadata.setTitle(modifiedMetadata.getTitle());
@@ -486,9 +497,9 @@ public class TaleRepository {
                     modifiedMetadata.setGSI1PK(null);
                     modifiedMetadata.setGSI1SK(null);
                     modifiedMetadata.setId(null);
-                    modifiedMetadata.setCreator(null);
+                    modifiedMetadata.setCreatorId(null);
                     userTaleMetadata.setId(null);
-                    userTaleMetadata.setCreator(null);
+                    userTaleMetadata.setCreatorId(null);
                     TaleMetadata updatedMetadata = updateTaleMetadata(modifiedMetadata);
                     TaleMetadata updatedUserTaleMetadata = updateTaleMetadata(userTaleMetadata);
                 }
@@ -498,9 +509,9 @@ public class TaleRepository {
                 modifiedMetadata.setGSI1PK(null);
                 modifiedMetadata.setGSI1SK(null);
                 modifiedMetadata.setId(null);
-                modifiedMetadata.setCreator(null);
+                modifiedMetadata.setCreatorId(null);
                 userTaleMetadata.setId(null);
-                userTaleMetadata.setCreator(null);
+                userTaleMetadata.setCreatorId(null);
                 TaleMetadata updatedMetadata = updateTaleMetadata(modifiedMetadata);
                 TaleMetadata updatedUserTaleMetadata = updateTaleMetadata(userTaleMetadata);
             }
@@ -509,8 +520,8 @@ public class TaleRepository {
         // Update routes
         if (modifiedRoutes != null && !modifiedRoutes.isEmpty()) {
             modifiedRoutes.forEach(route -> {
-                route.setPK("TALE#" + taleId);
-                route.setSK("ITINERARY#ROUTE#" + route.getId());
+                route.setPK(Tale.PK_PREFIX);
+                route.setSK(Tale.SK_PREFIX_ROUTE + route.getId());
             });
             List<Route> updatedRoutes = batchUpdateRoutes(modifiedRoutes);
         }
@@ -537,8 +548,8 @@ public class TaleRepository {
 
         if (modifiedStoryItems != null && !modifiedStoryItems.isEmpty()) {
             modifiedStoryItems.forEach(storyItem -> {
-                storyItem.setPK("TALE#" + taleId);
-                storyItem.setSK("STORY#STORY_ITEM#" + storyItem.getId());
+                storyItem.setPK(Tale.PK_PREFIX + taleId);
+                storyItem.setSK(Tale.SK_PREFIX_STORYITEM + storyItem.getId());
             });
 
             // Check if there are any new storymedia (feed) items added that need to update taleId
@@ -566,8 +577,8 @@ public class TaleRepository {
         // Delete tale metadata
         DeleteItemEnhancedRequest deleteTaleMetadataRequest = DeleteItemEnhancedRequest.builder()
                 .key(Key.builder()
-                        .partitionValue("TALE#" + taleId)
-                        .sortValue("#METADATA")
+                        .partitionValue(Tale.PK_PREFIX+ taleId)
+                        .sortValue(Tale.SK_PREFIX)
                         .build())
                 .build();
         DeleteItemEnhancedResponse<TaleMetadata> deleteTaleMetadataResponse = taleMetadataTable.deleteItemWithResponse(deleteTaleMetadataRequest);
@@ -575,8 +586,8 @@ public class TaleRepository {
         // Delete itinerary metadata
         DeleteItemEnhancedRequest deleteItineraryMetadataRequest = DeleteItemEnhancedRequest.builder()
                 .key(Key.builder()
-                        .partitionValue("TALE#" + taleId)
-                        .sortValue("#METADATA_ITINERARY")
+                        .partitionValue(Tale.PK_PREFIX + taleId)
+                        .sortValue(Tale.SK_PREFIX_ITINERARY)
                         .build())
                 .build();
         DeleteItemEnhancedResponse<BaseMetadata> itineraryMetadataResponse = baseMetadataTable.deleteItemWithResponse(deleteItineraryMetadataRequest);
@@ -584,8 +595,8 @@ public class TaleRepository {
         // Delete routes
         QueryConditional routesConditional = QueryConditional.sortBeginsWith(
                 Key.builder()
-                        .partitionValue("TALE#" + taleId)
-                        .sortValue("ITINERARY#ROUTE#")
+                        .partitionValue(Tale.PK_PREFIX + taleId)
+                        .sortValue(Tale.SK_PREFIX_ROUTE)
                         .build()
         );
         QueryEnhancedRequest routesGetRequest = QueryEnhancedRequest.builder()
@@ -610,8 +621,8 @@ public class TaleRepository {
         // Delete story items
         QueryConditional storyItemsConditional = QueryConditional.sortBeginsWith(
                 Key.builder()
-                        .partitionValue("TALE#" + taleId)
-                        .sortValue("STORY#")
+                        .partitionValue(Tale.PK_PREFIX + taleId)
+                        .sortValue(Tale.SK_PREFIX_STORYITEM)
                         .build()
         );
         QueryEnhancedRequest storyItemsGetRequest = QueryEnhancedRequest.builder()

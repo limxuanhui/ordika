@@ -1,25 +1,23 @@
 package io.bluextech.ordika.models;
 /* Created by limxuanhui on 10/3/24 */
 
-import io.bluextech.ordika.utils.converters.UserConverter;
 import lombok.Setter;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbConvertedBy;
 
 @Setter
 @DynamoDbBean
 public class BaseMetadata extends BaseDynamoDbItem {
 
     private String id;
-    private User creator;
+    private String creatorId;
 
     public BaseMetadata() {}
 
-    public BaseMetadata(String PK, String SK, String id, User creator) {
+    public BaseMetadata(String PK, String SK, String id, String creatorId) {
         super(PK, SK);
         this.id = id;
-        this.creator = creator;
+        this.creatorId = creatorId;
     }
 
     @DynamoDbAttribute("id")
@@ -27,17 +25,16 @@ public class BaseMetadata extends BaseDynamoDbItem {
         return id;
     }
 
-    @DynamoDbConvertedBy(UserConverter.class)
-    @DynamoDbAttribute("creator")
-    public User getCreator() {
-        return creator;
+    @DynamoDbAttribute("creatorId")
+    public String getCreatorId() {
+        return creatorId;
     }
 
     @Override
     public String toString() {
         return "BaseMetadata{" +
                 "id='" + id + '\'' +
-                ", creator=" + creator +
+                ", creatorId=" + creatorId +
                 '}';
     }
 
