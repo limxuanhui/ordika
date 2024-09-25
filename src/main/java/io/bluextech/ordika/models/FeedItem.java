@@ -2,11 +2,13 @@ package io.bluextech.ordika.models;
 /* Created by limxuanhui on 2/1/24 */
 
 import io.bluextech.ordika.utils.converters.MediaConverter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbConvertedBy;
 
+@NoArgsConstructor
 @Setter
 @DynamoDbBean
 public class FeedItem extends BaseDynamoDbItem implements Comparable<FeedItem> {
@@ -17,8 +19,6 @@ public class FeedItem extends BaseDynamoDbItem implements Comparable<FeedItem> {
     private String caption;
     private String feedId;
     private Integer order;
-
-    public FeedItem() {}
 
     public FeedItem(String PK, String SK, String id, Media thumbnail, Media media, String caption, String feedId) {
         super(PK, SK);

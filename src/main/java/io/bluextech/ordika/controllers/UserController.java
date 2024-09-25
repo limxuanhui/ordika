@@ -19,7 +19,10 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public User getUserByUserId(@PathVariable String userId) {
-        return userService.getUserByUserId(userId);
+
+        User u = userService.getUserByUserId(userId);
+        System.out.println(u);
+        return u;
     }
 
     @PutMapping("/update-profile")

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -18,10 +20,6 @@ public class UserService {
     private final int MIN_UPDATE_HANDLE_INTERVAL_DAYS = 30;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private FeedService feedService;
-    @Autowired
-    private TaleService taleService;
 
     public User createUser(User user) {
         return userRepository.createUser(user);
@@ -29,6 +27,10 @@ public class UserService {
 
     public User getUserByUserId(String userId) {
         return userRepository.getUserMetadataByUserId(userId);
+    }
+
+    public List<User> getUsersByUserIds(Set<String> userIds) {
+        return userRepository.batchGetUsersByUserIds(userIds);
     }
 
     public User updateUser(User user) {
@@ -91,8 +93,8 @@ public class UserService {
         updatedUser.setCreatedAt(null);
         updatedUser.setIsDeactivated(false);
 
-        feedService.activateAllFeedsByUserId(userId);
-        taleService.activateAllTalesByUserId(userId);
+//        feedService.activateAllFeedsByUserId(userId);
+//        taleService.activateAllTalesByUserId(userId);
 
         return updateUser(updatedUser);
     }
@@ -108,8 +110,8 @@ public class UserService {
         updatedUser.setCreatedAt(null);
         updatedUser.setIsDeactivated(true);
 
-        feedService.deactivateAllFeedsByUserId(userId);
-        taleService.deactivateAllTalesByUserId(userId);
+//        feedService.deactivateAllFeedsByUserId(userId);
+//        taleService.deactivateAllTalesByUserId(userId);
 
         return updateUser(updatedUser);
     }

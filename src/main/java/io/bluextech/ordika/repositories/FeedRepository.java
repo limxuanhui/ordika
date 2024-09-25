@@ -5,6 +5,7 @@ import io.bluextech.ordika.models.Feed;
 import io.bluextech.ordika.models.FeedItem;
 import io.bluextech.ordika.models.FeedMetadata;
 import io.bluextech.ordika.models.User;
+import io.bluextech.ordika.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,20 +20,20 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.utils.ImmutableMap;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class FeedRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeedRepository.class);
+    private static final int PAGE_SIZE = 4;
+    @Autowired
+    private UserService userService;
     @Autowired
     private DynamoDbClient dynamoDbClient;
     @Autowired
     private DynamoDbEnhancedClient dynamoDbEnhancedClient;
-    @Autowired
-    private DynamoDbTable<User> userTable;
     @Autowired
     private DynamoDbTable<FeedMetadata> feedMetadataTable;
     @Autowired
@@ -40,8 +41,8 @@ public class FeedRepository {
 
     public Feed getFeedByFeedId(String feedId) {
         FeedMetadata feedMetadata = feedMetadataTable.getItem(Key.builder()
-                .partitionValue("FEED#" + feedId)
-                .sortValue("#METADATA")
+                .partitionValue(Feed.PK_PREFIX + feedId)
+                .sortValue(Feed.SK_PREFIX)
                 .build());
         List<FeedItem> feedItems = getAllFeedItemsByFeedId(feedId);
 
@@ -52,8 +53,8 @@ public class FeedRepository {
         List<FeedItem> allFeedItems = new ArrayList<>();
         QueryConditional conditional = QueryConditional.sortBeginsWith(
                 Key.builder()
-                        .partitionValue("FEED#" + feedId)
-                        .sortValue("FEED_ITEM#")
+                        .partitionValue(Feed.PK_PREFIX + feedId)
+                        .sortValue(Feed.SK_PREFIX_FEED_ITEM)
                         .build()
         );
         QueryEnhancedRequest request = QueryEnhancedRequest.builder()
@@ -78,8 +79,8 @@ public class FeedRepository {
         feedIds.forEach(id -> {
             FeedMetadata metadata = feedMetadataTable.getItem(
                     Key.builder()
-                            .partitionValue("FEED#" + id)
-                            .sortValue("#METADATA")
+                            .partitionValue(Feed.PK_PREFIX + id)
+                            .sortValue(Feed.SK_PREFIX)
                             .build());
             feedMetadataList.add(metadata);
         });
@@ -96,14 +97,14 @@ public class FeedRepository {
         );
         QueryEnhancedRequest feedMetadataPageRequest = QueryEnhancedRequest.builder()
                 .queryConditional(feedMetadataPageConditional)
-                .limit(4)
+                .limit(PAGE_SIZE)
                 .scanIndexForward(false)
                 .consistentRead(false)
                 .exclusiveStartKey(exclusiveStartKey)
-                .filterExpression(Expression.builder()
-                        .expression("creator.isDeactivated=:isDeactivated")
-                        .expressionValues(Map.of(":isDeactivated", AttributeValue.fromBool(false)))
-                        .build())
+//                .filterExpression(Expression.builder()
+//                        .expression("creator.isDeactivated=:isDeactivated")
+//                        .expressionValues(Map.of(":isDeactivated", AttributeValue.fromBool(false)))
+//                        .build())
                 .build();
         long start = System.currentTimeMillis();
         Page<FeedMetadata> feedMetadataPage = feedMetadataTable.index("GSI1")
@@ -113,24 +114,35 @@ public class FeedRepository {
                 .toList()
                 .get(0);
         List<Feed> feeds = new ArrayList<>();
-        feedMetadataPage.items().forEach(feedMetadata -> {
-            QueryConditional feedItemsConditional = QueryConditional.sortBeginsWith(
-                    Key.builder()
-                            .partitionValue(feedMetadata.getPK())
-                            .sortValue("FEED_ITEM#")
-                            .build()
-            );
+        Set<String> uniqueCreatorIds = feedMetadataPage.items()
+                .stream()
+                .map(FeedMetadata::getCreatorId)
+                .collect(Collectors.toSet());
+        List<User> uniqueUsers = userService.getUsersByUserIds(uniqueCreatorIds);
 
-            QueryEnhancedRequest feedItemsRequest = QueryEnhancedRequest.builder()
-                    .queryConditional(feedItemsConditional)
-                    .scanIndexForward(false)
-                    .build();
-            List<FeedItem> feedItems = feedItemTable.query(feedItemsRequest)
-                    .items()
-                    .stream()
-                    .sorted()
-                    .toList();
-            feeds.add(new Feed(feedMetadata, feedItems));
+        feedMetadataPage.items().forEach(feedMetadata -> {
+            Optional<User> user = uniqueUsers.stream()
+                    .filter(u -> Objects.equals(u.getId(), feedMetadata.getCreatorId()))
+                    .findFirst();
+            if (user.isPresent() && !user.get().getIsDeactivated()) {
+                QueryConditional feedItemsConditional = QueryConditional.sortBeginsWith(
+                        Key.builder()
+                                .partitionValue(feedMetadata.getPK())
+                                .sortValue(Feed.SK_PREFIX_FEED_ITEM)
+                                .build()
+                );
+
+                QueryEnhancedRequest feedItemsRequest = QueryEnhancedRequest.builder()
+                        .queryConditional(feedItemsConditional)
+                        .scanIndexForward(false)
+                        .build();
+                List<FeedItem> feedItems = feedItemTable.query(feedItemsRequest)
+                        .items()
+                        .stream()
+                        .sorted()
+                        .toList();
+                feeds.add(new Feed(feedMetadata, feedItems));
+            }
         });
 
         LOGGER.info("Time taken to get feed page (ms): " + (System.currentTimeMillis() - start));
@@ -145,8 +157,8 @@ public class FeedRepository {
         feedMetadataPage.items().forEach(feedMetadata -> {
             QueryConditional queryConditional = QueryConditional.sortBeginsWith(
                     Key.builder()
-                            .partitionValue("FEED#" + feedMetadata.getId())
-                            .sortValue("FEED_ITEM#")
+                            .partitionValue(Feed.PK_PREFIX + feedMetadata.getId())
+                            .sortValue(Feed.SK_PREFIX_FEED_ITEM)
                             .build()
             );
             QueryEnhancedRequest queryEnhancedRequest = QueryEnhancedRequest.builder()
@@ -159,8 +171,8 @@ public class FeedRepository {
                     .toList();
             FeedMetadata metadata = feedMetadataTable.getItem(
                     Key.builder()
-                            .partitionValue("FEED#" + feedMetadata.getId())
-                            .sortValue("#METADATA")
+                            .partitionValue(Feed.PK_PREFIX + feedMetadata.getId())
+                            .sortValue(Feed.SK_PREFIX)
                             .build()
             );
 
@@ -184,18 +196,16 @@ public class FeedRepository {
     public Page<FeedMetadata> getNextFeedsMetadataPageByUserId(String userId) {
         QueryConditional conditional = QueryConditional.sortBeginsWith(
                 Key.builder()
-                        .partitionValue("USER#" + userId)
-                        .sortValue("#METADATA_FEED#FEED#")
+                        .partitionValue(Feed.USER_PK_PREFIX + userId)
+                        .sortValue(Feed.USER_SK_PREFIX)
                         .build()
         );
         QueryEnhancedRequest request = QueryEnhancedRequest.builder()
                 .queryConditional(conditional)
                 .limit(10)
                 .scanIndexForward(false)
-//                .filterExpression(Expression.builder().build())
-//                .consistentRead(false)
-//                .exclusiveStartKey()
                 .build();
+
         // Check if user feed metadata is same schema as regular feed metadata
         Page<FeedMetadata> feedMetadataPage = feedMetadataTable.query(request)
                 .stream()
@@ -208,14 +218,13 @@ public class FeedRepository {
     public List<FeedMetadata> getAllFeedsMetadataByUserId(String userId) {
         List<FeedMetadata> allFeedMetadataList = new ArrayList<>();
         QueryConditional conditional = QueryConditional.sortBeginsWith(Key.builder()
-                .partitionValue("METADATA_FEED")
-                .sortValue("FEED#")
+                .partitionValue(Feed.GSI1PK_PREFIX)
+                .sortValue(Feed.GSI1SK_PREFIX)
                 .build());
         QueryEnhancedRequest request = QueryEnhancedRequest.builder()
                 .queryConditional(conditional)
                 .filterExpression(Expression.builder()
-                        .expression("creator.id=:userId")
-//                        .expressionNames(ImmutableMap.of("#creatorId", "creator.id")) // not working
+                        .expression("creatorId=:userId")
                         .expressionValues(ImmutableMap.of(":userId", AttributeValue.fromS(userId)))
                         .build())
                 .consistentRead(false) // TODO: should be true since we want to get every feed metadata?
@@ -247,19 +256,17 @@ public class FeedRepository {
 
     public Feed createNewFeed(Feed feed) {
         FeedMetadata feedMetadata = feed.getMetadata();
-        feedMetadata.setPK("FEED#" + feedMetadata.getId());
-        feedMetadata.setSK("#METADATA");
-        feedMetadata.setGSI1PK("METADATA_FEED");
+        feedMetadata.setPK(Feed.PK_PREFIX + feedMetadata.getId());
+        feedMetadata.setSK(Feed.SK_PREFIX);
+        feedMetadata.setGSI1PK(Feed.GSI1PK_PREFIX);
         feedMetadata.setGSI1SK(feedMetadata.getPK());
 
-        User creator = feedMetadata.getCreator();
-        creator.setPK("USER#" + creator.getId());
-        creator.setSK("METADATA");
+        String creatorId = feedMetadata.getCreatorId();
         FeedMetadata userFeedMetadata = new FeedMetadata(
-                creator.getPK(),
-                "#METADATA_FEED#FEED#" + feedMetadata.getId(),
+                Feed.USER_PK_PREFIX + creatorId,
+                Feed.USER_SK_PREFIX + feedMetadata.getId(),
                 feedMetadata.getId(),
-                creator,
+                creatorId,
                 feedMetadata.getThumbnail(),
                 feedMetadata.getTaleId());
 
@@ -358,7 +365,7 @@ public class FeedRepository {
     public List<FeedMetadata> updateFeedsTaleId(List<FeedMetadata> feedMetadataList) {
         feedMetadataList.forEach(feedMetadata -> {
             feedMetadata.setId(null);
-            feedMetadata.setCreator(null);
+            feedMetadata.setCreatorId(null);
             feedMetadata.setThumbnail(null);
             feedMetadata.setGSI1PK(null);
             feedMetadata.setGSI1SK(null);
@@ -374,10 +381,10 @@ public class FeedRepository {
 
     public Feed deleteFeed(Feed feed) {
         FeedMetadata userFeedMetadata = new FeedMetadata(
-                feed.getMetadata().getCreator().getPK(),
-                "#METADATA_FEED#" + feed.getMetadata().getId(),
+                Feed.USER_PK_PREFIX + feed.getMetadata().getCreatorId(),
+                Feed.USER_SK_PREFIX + feed.getMetadata().getId(),
                 feed.getMetadata().getId(),
-                feed.getMetadata().getCreator(),
+                feed.getMetadata().getCreatorId(),
                 feed.getMetadata().getThumbnail(),
                 feed.getMetadata().getTaleId());
         feedMetadataTable.deleteItem(userFeedMetadata);
