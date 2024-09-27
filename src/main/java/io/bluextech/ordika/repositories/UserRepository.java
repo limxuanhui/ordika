@@ -36,6 +36,7 @@ public class UserRepository {
     }
 
     public List<User> batchGetUsersByUserIds(Set<String> userIds) {
+        LOGGER.info("Getting users batch: " + userIds);
         List<ReadBatch> readBatches = userIds.stream()
                 .map(userId -> ReadBatch.builder(User.class)
                         .mappedTableResource(userTable)
@@ -48,12 +49,9 @@ public class UserRepository {
         BatchGetItemEnhancedRequest request = BatchGetItemEnhancedRequest.builder()
                 .readBatches(readBatches)
                 .build();
-
         BatchGetResultPageIterable result = dynamoDbEnhancedClient.batchGetItem(request);
-        List<User> users = result.resultsForTable(userTable).stream().toList();
-        LOGGER.info("Batch got users");
-        System.out.println(users);
-        return users;
+
+        return result.resultsForTable(userTable).stream().toList();
     }
 
     public User createUser(User user) {

@@ -103,8 +103,8 @@ public class TaleRepository {
                 .mappedTableResource(storyItemTable);
         storyItemIds.forEach(id -> {
             getBatchBuilder.addGetItem(Key.builder()
-                    .partitionValue("TALE#" + taleId)
-                    .sortValue("STORY#STORY_ITEM#" + id)
+                    .partitionValue(Tale.PK_PREFIX + taleId)
+                    .sortValue(Tale.SK_PREFIX_STORYITEM + id)
                     .build());
         });
         ReadBatch readBatch = getBatchBuilder.build();
