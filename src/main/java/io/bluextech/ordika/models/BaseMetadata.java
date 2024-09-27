@@ -1,18 +1,18 @@
 package io.bluextech.ordika.models;
 /* Created by limxuanhui on 10/3/24 */
 
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 
+@NoArgsConstructor
 @Setter
 @DynamoDbBean
 public class BaseMetadata extends BaseDynamoDbItem {
 
     private String id;
     private String creatorId;
-
-    public BaseMetadata() {}
 
     public BaseMetadata(String PK, String SK, String id, String creatorId) {
         super(PK, SK);

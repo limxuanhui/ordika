@@ -3,34 +3,28 @@ package io.bluextech.ordika.repositories;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.bluextech.ordika.models.*;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@RequiredArgsConstructor
 @Repository
 public class UserRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRepository.class);
-    @Autowired
-    private DynamoDbTable<User> userTable;
-    @Autowired
-    private DynamoDbTable<FeedMetadata> feedMetadataTable;
-    @Autowired
-    private DynamoDbTable<UserDeletionInfo> userDeletionInfoTable;
-    @Autowired
-    private DynamoDbClient dynamoDbClient;
-    @Autowired
-    private DynamoDbEnhancedClient dynamoDbEnhancedClient;
+    private final DynamoDbEnhancedClient dynamoDbEnhancedClient;
+    private final DynamoDbTable<User> userTable;
+    private final DynamoDbTable<UserDeletionInfo> userDeletionInfoTable;
+    private final DynamoDbTable<FeedMetadata> feedMetadataTable;
 
     public User getUserMetadataByUserId(String userId) {
         LOGGER.info("Finding user with userId: " + userId);
@@ -42,6 +36,7 @@ public class UserRepository {
     }
 
     public List<User> batchGetUsersByUserIds(Set<String> userIds) {
+        LOGGER.info("Getting users batch: " + userIds);
         List<ReadBatch> readBatches = userIds.stream()
                 .map(userId -> ReadBatch.builder(User.class)
                         .mappedTableResource(userTable)
@@ -54,12 +49,9 @@ public class UserRepository {
         BatchGetItemEnhancedRequest request = BatchGetItemEnhancedRequest.builder()
                 .readBatches(readBatches)
                 .build();
-
         BatchGetResultPageIterable result = dynamoDbEnhancedClient.batchGetItem(request);
-        List<User> users = result.resultsForTable(userTable).stream().toList();
-        LOGGER.info("Batch got users");
-        System.out.println(users);
-        return users;
+
+        return result.resultsForTable(userTable).stream().toList();
     }
 
     public User createUser(User user) {

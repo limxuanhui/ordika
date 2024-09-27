@@ -5,7 +5,7 @@ import io.bluextech.ordika.models.Media;
 import io.bluextech.ordika.models.User;
 import io.bluextech.ordika.models.UserDeletionInfo;
 import io.bluextech.ordika.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -13,13 +13,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 
+@RequiredArgsConstructor
 @Service
 public class UserService {
 
-    private final int MIN_UPDATE_NAME_INTERVAL_DAYS = 7;
-    private final int MIN_UPDATE_HANDLE_INTERVAL_DAYS = 30;
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public User createUser(User user) {
         return userRepository.createUser(user);
@@ -54,6 +52,7 @@ public class UserService {
         }
 
         if (name != null) {
+            int MIN_UPDATE_NAME_INTERVAL_DAYS = 7;
             boolean canUpdateName = updatedUser.getLastUpdatedNameAt() == null || updatedUser.getLastUpdatedNameAt()
                     .plus(MIN_UPDATE_NAME_INTERVAL_DAYS, ChronoUnit.DAYS)
                     .isBefore(now);
@@ -65,6 +64,7 @@ public class UserService {
         }
 
         if (handle != null) {
+            int MIN_UPDATE_HANDLE_INTERVAL_DAYS = 30;
             boolean canUpdateHandle = updatedUser.getLastUpdatedHandleAt() == null || updatedUser.getLastUpdatedHandleAt()
                     .plus(MIN_UPDATE_HANDLE_INTERVAL_DAYS, ChronoUnit.DAYS)
                     .isBefore(now);

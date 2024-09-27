@@ -6,9 +6,9 @@ import io.bluextech.ordika.models.FeedItem;
 import io.bluextech.ordika.models.FeedMetadata;
 import io.bluextech.ordika.models.User;
 import io.bluextech.ordika.services.UserService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -16,28 +16,22 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.utils.ImmutableMap;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Repository
 public class FeedRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeedRepository.class);
     private static final int PAGE_SIZE = 4;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private DynamoDbClient dynamoDbClient;
-    @Autowired
-    private DynamoDbEnhancedClient dynamoDbEnhancedClient;
-    @Autowired
-    private DynamoDbTable<FeedMetadata> feedMetadataTable;
-    @Autowired
-    private DynamoDbTable<FeedItem> feedItemTable;
+    private final DynamoDbEnhancedClient dynamoDbEnhancedClient;
+    private final UserService userService;
+    private final DynamoDbTable<FeedMetadata> feedMetadataTable;
+    private final DynamoDbTable<FeedItem> feedItemTable;
 
     public Feed getFeedByFeedId(String feedId) {
         FeedMetadata feedMetadata = feedMetadataTable.getItem(Key.builder()
