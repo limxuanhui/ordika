@@ -33,7 +33,7 @@ public class UserConverter implements AttributeConverter<User> {
                     Map.entry("name", AttributeValue.fromS(user.getName())),
                     Map.entry("handle", AttributeValue.fromS(user.getHandle())),
                     Map.entry("email", AttributeValue.fromS(user.getEmail())),
-                    Map.entry("bio", AttributeValue.fromS(user.getBio())),
+                    Map.entry("bio", AttributeValue.fromS(user.getBio() != null ? user.getBio() : "")),
                     Map.entry("avatar", mediaConverter.transformFrom(user.getAvatar())),
                     Map.entry("createdAt", instantConverter.transformFrom(user.getCreatedAt())),
                     Map.entry("lastUpdatedNameAt",
@@ -63,6 +63,7 @@ public class UserConverter implements AttributeConverter<User> {
                             "name", AttributeValue.fromS(user.getName()),
                             "handle", AttributeValue.fromS(user.getHandle()),
                             "email", AttributeValue.fromS(user.getEmail()),
+                            "bio", AttributeValue.fromS(user.getBio()),
                             "avatar", mediaConverter.transformFrom(user.getAvatar()),
                             "isDeactivated", AttributeValue.fromBool(user.getIsDeactivated())
                     )
@@ -78,7 +79,8 @@ public class UserConverter implements AttributeConverter<User> {
                 map.get("name").s(),
                 map.get("handle").s(),
                 map.get("email").s(),
-                map.containsKey("bio") ? map.get("bio").s() : "",
+                map.containsKey("bio") && map.get("lastUpdatedNameAt").s() != null
+                        ? map.get("bio").s() : "",
                 mediaConverter.transformTo(map.get("avatar")),
                 instantConverter.transformTo(map.get("createdAt")),
                 map.containsKey("lastUpdatedNameAt") && map.get("lastUpdatedNameAt").s() != null
